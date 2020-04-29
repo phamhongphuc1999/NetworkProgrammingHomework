@@ -19,6 +19,11 @@
 
 int main()
 {
-    return 0;
+	byte f[100];
+	f[0] = '0';
+	f[1] = 'a';
+	f[2] = 0;
+	printf("%s", f);
+	system("pause");
 }
 

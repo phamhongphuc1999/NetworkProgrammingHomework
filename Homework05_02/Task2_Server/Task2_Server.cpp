@@ -6,6 +6,8 @@
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
 #include <conio.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
 #include <winsock2.h>
 #include <WS2tcpip.h>
 #include <SDKDDKVer.h>
@@ -74,6 +76,7 @@ byte* AddHearer(byte* payload, int lenPayload, int opcode) {
 }
 #pragma endregion
 
+#pragma region EN-DECRYPTION
 byte* Encryption(byte* payload, int length, int opcode) {
 	byte* result = new byte[length];
 	for (int i = 0; i < length; i++) {
@@ -89,6 +92,21 @@ byte* Decryption(byte* payload, int length, int opcode) {
 	}
 	return result;
 }
+#pragma endregion
+
+#pragma region WORK WITH FILE
+string CreateRamdomFileName() {
+	int length = rand() % 6 + 5;
+	string result = "";
+	srand((int)time(0));
+	for (int i = 0; i < length; i++) {
+		int element = rand() % 26 + 97;
+		result += (char)element;
+	}
+	return result;
+}
+#pragma endregion
+
 
 #pragma region HANDLER MULTIPLE CLIENT
 unsigned _stdcall Handler(void* param) {

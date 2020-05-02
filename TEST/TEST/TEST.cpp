@@ -13,9 +13,13 @@
 #include <fstream>
 #include <string>
 #include <process.h>
+#include <stdlib.h>
+#include <time.h>
+#include <list>
+#include <vector>
 
 #define SERVER_ADDR "127.0.0.1"
-#define BUFF_SIZE 2048
+#define BUFF_SIZE 5
 #define SERVER_EXE "Task2_Server.exe"
 #define MAX_CLIENT 1024
 using namespace std;
@@ -86,17 +90,27 @@ byte* Decryption(byte* payload, int length, int opcode) {
 	return result;
 }
 
+vector<string> CreatePayload(string path) {
+	ifstream file; file.open(path);
+	string temp = "", line;
+	vector<string> result;
+	while (!file.eof()) {
+		getline(file, line);
+		temp += line + "\n";
+		while (temp.length() > BUFF_SIZE) {
+			result.push_back(temp.substr(0, BUFF_SIZE));
+			temp = temp.substr(BUFF_SIZE);
+		}
+	}
+	file.close();
+	return result;
+}
+
 int main()
 {
-	int abc = 0;
-	string s = "chien tranh giua cac vi\n sao";
-	byte* b = ConvertStringToBytes(s , &abc);
-	byte* b1 = Encryption(b, abc, 10);
-	string s1 = ConvertBytesToString(b1, abc);
-	cout << s1 << endl;
-	byte* b2 = Decryption(b1, abc, 10);
-	string s2 = ConvertBytesToString(b2, abc);
-	cout << s2 << endl;
+	vector<string> abc = CreatePayload("./abc.txt");
+	for (int i = 0; i < abc.size(); i++)
+		cout << abc.at(i) << "---ket thuc---" << endl;;
 	system("pause");
 }
 

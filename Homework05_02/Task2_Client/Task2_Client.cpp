@@ -12,6 +12,8 @@
 #include <process.h>
 #include <fstream>
 #include <string>
+#include <list>
+#include <vector>
 
 #define BUFF_SIZE 2048
 #define CLIENT_EXE "Task2_Client.exe"
@@ -100,15 +102,20 @@ string ConvertBytesToString(byte* value, int length) {
 #pragma endregion
 
 #pragma region FILE
-byte* CreatePayload(string path, int*lenByte) {
+vector<string> CreatePayload(string path) {
 	ifstream file; file.open(path);
 	string temp = "", line;
+	vector<string> result;
 	while (!file.eof()) {
 		getline(file, line);
 		temp += line + "\n";
+		while (temp.length() > BUFF_SIZE) {
+			result.push_back(temp.substr(0, BUFF_SIZE));
+			temp = temp.substr(BUFF_SIZE);
+		}
 	}
 	file.close();
-	return ConvertStringToBytes(temp, lenByte);
+	return result;
 }
 #pragma endregion
 
@@ -166,10 +173,24 @@ moc1:
 		return 0;
 	}
 	printf("connected server\n");
+	printf("============================== press 0 to encryption =========================");
+	printf("============================== press 1 to decryption =========================");
 	while (true) {
-		char buff[BUFF_SIZE];
+		char function[10];
 		fflush(stdin);
-		gets_s(buff);
+	node1:
+		printf("choice function: ");
+		gets_s(function, 10);
+		if (!strcmp(function, "0")) {
+
+		}
+		else if (!strcmp(function, "1")) {
+
+		}
+		else {
+			printf("Wrong function\n");
+			goto node1;
+		}
 		int ret = send(client, buff, strlen(buff), 0);
 		if (ret == SOCKET_ERROR) printf("can not send message\n");
 

@@ -62,7 +62,7 @@ int ConvertBytesToInt(byte* value, int length) {
 	return result;
 }
 
-byte* AddHearer(byte* payload, int lenPayload, int opcode) {
+char* AddHearer(byte* payload, int lenPayload, int opcode) {
 	byte* result = new byte[lenPayload + 3];
 	byte* opcodeByte = ConvertIntToBytes(opcode);
 	byte* lenPayloadByte = ConvertIntToBytes(lenPayload);
@@ -71,7 +71,9 @@ byte* AddHearer(byte* payload, int lenPayload, int opcode) {
 	result[2] = lenPayloadByte[1];
 	for (int i = 0; i < lenPayload; i++)
 		result[i + 3] = payload[i];
-	return result;
+	char* resultChar = (char*)result;
+	resultChar[lenPayload + 3] = 0;
+	return resultChar;
 }
 
 byte* Encryption(byte* payload, int length, int opcode) {
@@ -108,9 +110,12 @@ vector<string> CreatePayload(string path) {
 
 int main()
 {
-	vector<string> abc = CreatePayload("./abc.txt");
-	for (int i = 0; i < abc.size(); i++)
-		cout << abc.at(i) << "---ket thuc---" << endl;;
+	byte* b = ConvertIntToBytes(100000);
+	printf("%X\n", b[0]);
+	int a = ConvertBytesToInt(&b[0], 2);
+	byte* c = new byte[1]{ b[0] };
+	a = ConvertBytesToInt(c, 2);
+	cout << a << endl;
 	system("pause");
 }
 

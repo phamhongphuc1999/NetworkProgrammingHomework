@@ -14,6 +14,7 @@
 #include <string>
 #include <list>
 #include <vector>
+#include <iostream>
 
 #define BUFF_SIZE 2048
 #define CLIENT_EXE "Task2_Client.exe"
@@ -120,7 +121,7 @@ vector<string> CreatePayload(string path) {
 #pragma endregion
 
 #pragma region ENCAPSULATION
-byte* AddHearer(byte* payload, int lenPayload, int opcode) {
+char* AddHearer(byte* payload, int lenPayload, int opcode) {
 	byte* result = new byte[lenPayload + 3];
 	byte* opcodeByte = ConvertIntToBytes(opcode);
 	byte* lenPayloadByte = ConvertIntToBytes(lenPayload);
@@ -129,20 +130,58 @@ byte* AddHearer(byte* payload, int lenPayload, int opcode) {
 	result[2] = lenPayloadByte[1];
 	for (int i = 0; i < lenPayload; i++)
 		result[i + 3] = payload[i];
-	return result;
+	char* resultChar = (char*)result;
+	resultChar[lenPayload + 3] = 0;
+	return resultChar;
 }
 #pragma endregion
 
 #pragma region STREAM TCP
-//int RECEIVE_TCP(SOCKET s, byte* payload, int flag, int* opcode) {
+//int RECEIVE_TCP(SOCKET s, char* buff, int* opcode, int flag) {
 //	int index = 0, ret, result = 0;
-//	
+//	char* temp = new char[10];
+//	ret = recv(s, temp, 10, flag);
+//	if (ret == 0) return 0;
+//	else if (ret == SOCKET_ERROR) return SOCKET_ERROR;
+//	else {
+//		int length = LENGTH(temp);
+//		while (length > 0) {
+//			ret = recv(s, &buff[index], length, 0);
+//			if (ret == SOCKET_ERROR) return SOCKET_ERROR;
+//			else result += ret;
+//			index += ret;
+//			length -= ret;
+//		}
+//		return result;
+//	}
 //}
-//
-//int SEND_TCP(SOCKET s, byte* buff, int flag) {
-//
-//}
+
+int RECEIVE_TCP(SOCKET s, char* buff, int* opcode, int flag) {
+	int index = 0, ret, result = 0;
+	char* temp = new char[3];
+	ret = recv(s, temp, 3, flag);
+	if (ret == 0) return 0;
+	else if (ret == SOCKET_ERROR) return SOCKET_ERROR;
+	else {
+		temp[3] = 0;
+		byte* header = (byte*)temp;
+		*opcode = ConvertBytesToInt(header[0]);
+	}
+}
+
+int SEND_TCP(SOCKET s, char* buff, int flag) {
+	int nLeft = strlen(buff), index = 0, ret, result = 0;
+	while (nLeft > 0) {
+		ret = send(s, &buff[index], nLeft, flag);
+		if (ret == SOCKET_ERROR) return SOCKET_ERROR;
+		else result += ret;
+		nLeft -= ret; index += ret;
+	}
+	return result;
+}
 #pragma endregion
+
+
 
 int main()
 {
@@ -173,25 +212,48 @@ moc1:
 		return 0;
 	}
 	printf("connected server\n");
-	printf("============================== press 0 to encryption =========================");
-	printf("============================== press 1 to decryption =========================");
+	printf("============================== press 0 to encryption =========================\n");
+	printf("============================== press 1 to decryption =========================\n");
 	while (true) {
-		char function[10];
+		int opcode; int key; string path;
 		fflush(stdin);
 	node1:
 		printf("choice function: ");
-		gets_s(function, 10);
-		if (!strcmp(function, "0")) {
-
+		scanf_s("%d", &opcode);
+		if (opcode == 0) {
+		node0_1:
+			printf("enter key to encryption: ");
+			cin >> key;
+			if (key <= 0) {
+				printf("require key is unsigned integer\n");
+				goto node0_1;
+			}
+			printf("enter path of file: ");
+			cin >> path;
+			if (path == "") break;
 		}
-		else if (!strcmp(function, "1")) {
-
+		else if (opcode== 1) {
+		node1_1:
+			printf("enter key to decryption: ");
+			cin >> key;
+			if (key <= 0) {
+				printf("require key is unsigned integer\n");
+				goto node1_1;
+			}
+			printf("enter path of file: ");
+			cin >> path;
+			if (path == "") break;
 		}
 		else {
 			printf("Wrong function\n");
 			goto node1;
 		}
-		int ret = send(client, buff, strlen(buff), 0);
+		//vector<string> payloadList = CreatePayload(path);
+		byte* keyChar = ConvertIntToBytes(key);
+		printf("%d\n\n\n\n", strlen(AddHearer(keyChar, 4, opcode)));
+		SEND_TCP(client, AddHearer(keyChar, 4, opcode), 0);
+
+		/*int ret = send(client, buff, strlen(buff), 0);
 		if (ret == SOCKET_ERROR) printf("can not send message\n");
 
 		ret = recv(client, buff, BUFF_SIZE, 0);
@@ -200,7 +262,7 @@ moc1:
 			break;
 		}
 		buff[ret] = 0;
-		printf("%s\n", buff);
+		printf("%s\n", buff);*/
 	}
 	closesocket(client);
 	WSACleanup();

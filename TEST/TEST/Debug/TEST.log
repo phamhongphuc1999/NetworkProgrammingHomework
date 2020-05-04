@@ -1,3 +1,6 @@
 ﻿  TEST.cpp
+d:\documents\visualstudio\lap_trinh_mang\test\test\test.cpp(46): warning C4018: '<': signed/unsigned mismatch
+d:\documents\visualstudio\lap_trinh_mang\test\test\test.cpp(75): warning C4018: '<': signed/unsigned mismatch
+d:\documents\visualstudio\lap_trinh_mang\test\test\test.cpp(79): warning C4018: '<': signed/unsigned mismatch
   TEST.vcxproj -> D:\Documents\VisualStudio\Lap_trinh_mang\TEST\Debug\TEST.exe
   TEST.vcxproj -> D:\Documents\VisualStudio\Lap_trinh_mang\TEST\Debug\TEST.pdb (Full PDB)

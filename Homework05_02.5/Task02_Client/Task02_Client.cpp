@@ -178,8 +178,37 @@ char* ConvertStringToChars(string input, char* output) {
 	result[length] = 0;
 	return result;
 }
-#pragma endregion
 
+string ConvertCharsToString(char* value) {
+	int length = strlen(value);
+	string result = "";
+	for (int i = 0; i < length; i++) {
+		result += value[i];
+	}
+	return result;
+}
+
+char* ConvertIntToChars(char* dest, int value) {
+	int index = 0;
+	while (value > 0) {
+		int temp = value % 10;
+		value = value / 10;
+		dest[index] = temp + '0';
+		index++;
+	}
+	dest[index] = 0;
+	return dest;
+}
+
+int ConvertCharsToInt(char* value) {
+	int length = strlen(value);
+	int result = 0;
+	for (int i = length - 1; i >= 0; i--) {
+		result = result * 10 + (value[i] - '0');
+	}
+	return result;
+}
+#pragma endregion
 
 int main()
 {
@@ -212,7 +241,7 @@ moc1:
 	printf("connected server\n");
 	printf("======================== press 0 to encryption =============================\n");
 	printf("======================== press 1 to decryption =============================\n");
-	char buff[BUFF_SIZE], dest[BUFF_SIZE], opcode[10];
+	char buff[BUFF_SIZE], dest[BUFF_SIZE], opcode[10], keyChar[10];
 	int ret, key; string path;
 	while (true) {
 		fflush(stdin);
@@ -247,25 +276,33 @@ moc1:
 		}
 		vector<string> payload = CreatePayload(path);
 		int length = payload.size();
-		ret = SEND_TCP(client, AddHeader(dest, key, opcode), 0);
+		ret = SEND_TCP(client, AddHeader(dest, ConvertIntToChars(keyChar, key), opcode), 0);
 		if (ret == SOCKET_ERROR) printf("can not send key\n");
 		for (int i = 0; i < length; i++) {
 			ConvertStringToChars(payload[i], buff);
 			ret = SEND_TCP(client, AddHeader(dest, buff, new char[2]{ "2" }), 0);
 			if (ret == SOCKET_ERROR) printf("can not send file\n");
 		}
-		ret = SEND_TCP(client, AddHeader(dest, new char[1]{}, new char[2]{ "2" }), 0);
+		ret = SEND_TCP(client, AddHeader(dest, new char[1]{ 0 }, new char[2]{ "2" }), 0);
 		if (ret == SOCKET_ERROR) printf("can not send file\n");
-		/*int ret = SEND_TCP(client, AddHeader(dest, buff), 0);
-		if (ret == SOCKET_ERROR) printf("can not send message\n");*/
 
-		/*ret = RECEIVE_TCP(client, buff, 0);
-		if (ret == SOCKET_ERROR) {
-			printf("ERROR: %d", WSAGetLastError());
-			break;
+
+		payload.clear(); int opcode_int = 0;
+		while (true) {
+			ret = RECEIVE_TCP(client, buff, &opcode_int, 0);
+			if (ret == SOCKET_ERROR) {
+				printf("can not receive from client\n");
+				break;
+			}
+			else if (opcode_int == 2) {
+				buff[ret] = 0;
+				if (!strcmp(buff, "")) {
+					printf("receive fineshed\n");
+					break;
+				}
+				payload.push_back(ConvertCharsToString(buff));
+			}
 		}
-		buff[ret] = 0;
-		printf("%s\n", buff);*/
 	}
 	closesocket(client);
 	WSACleanup();

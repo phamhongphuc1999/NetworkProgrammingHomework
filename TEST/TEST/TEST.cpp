@@ -26,51 +26,60 @@ using namespace std;
 
 #pragma comment(lib, "Ws2_32.lib")
 
-#pragma region CONVERT
-byte* ConvertIntToBytes(int value) {
-	byte* result = new byte[4];
-	for (int i = 0; i < 4; i++)
-		result[i] = (value >> (i * 8)) & 0xff;
-	return result;
-}
-
-int ConvertBytesToInt(byte* value, int length) {
-	int result = 0;
-	if (length > 4) length = 4;
-	else if (length < 0) return -1;
-	for (int i = length - 1; i >= 0; i--) {
-		result <<= 8;
-		result |= value[i];
+string WcharToString(wchar_t* wchar_str)
+{
+	string str = "";
+	int index = 0;
+	while (wchar_str[index] != 0)
+	{
+		str += (char)wchar_str[index];
+		++index;
 	}
-	return result;
+	return str;
 }
 
-byte* ConvertStringToBytes(string value, int* lenByte) {
-	int length = value.length();
-	*lenByte = length;
-	byte* result = new byte[length];
-	for (int i = 0; i < length; i++) {
-		result[i] = value[i];
+wchar_t* StringToWchar(string str)
+{
+	int index = 0;
+	int count = str.size();
+	wchar_t *ws_str = new wchar_t[count + 1];
+	while (index < str.size())
+	{
+		ws_str[index] = (wchar_t)str[index];
+		index++;
 	}
-	return result;
+	ws_str[index] = 0;
+	return ws_str;
 }
 
-string ConvertBytesToString(byte* value, int length) {
-	string result;
-	for (int i = 0; i < length; i++) {
-		result += value[i];
+vector<string> ListFileInFolder(string path_folder)
+{
+	WIN32_FIND_DATA find_file_data;
+
+	vector<string> list_file;
+	wchar_t *path_folder_full = StringToWchar(path_folder);
+
+	HANDLE hFind = FindFirstFile(path_folder_full, &find_file_data);
+	list_file.push_back(WcharToString(find_file_data.cFileName));
+	while (FindNextFile(hFind, &find_file_data))
+	{
+		list_file.push_back(WcharToString(find_file_data.cFileName));
 	}
-	return result;
+	return list_file;
 }
-#pragma endregion
-
-
 
 int main()
 {
-	char c = '1';
-	int a = c - '0';
-	cout << a;
+	string s = "chien tranh giua cac vi sao";
+	string a;
+	for (int i = 0; i < s.length(); i++) {
+		a += s[i] + 100;
+	}
+	string b;
+	for (int i = 0; i < s.length(); i++)
+		b += a[i] - 100;
+	cout << a << endl;
+	cout << b << endl;
 	system("pause");
 }
 

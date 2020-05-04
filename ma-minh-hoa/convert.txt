@@ -34,4 +34,37 @@ string ConvertBytesToString(byte* value, int length) {
 	}
 	return result;
 }
+
+char* ConvertStringToChars(string input, char* output) {
+	int length = input.length();
+	char* result = new char[length];
+	for (int i = 0; i < length; i++) {
+		output[i] = input[i];
+		result[i] = input[i];
+	}
+	output[length] = 0;
+	result[length] = 0;
+	return result;
+}
+
+char* ConvertIntToChars(char* dest, int value) {
+	int index = 0;
+	while (value > 0) {
+		int temp = value % 10;
+		value = value / 10;
+		dest[index] = temp + '0';
+		index++;
+	}
+	dest[index] = 0;
+	return dest;
+}
+
+int ConvertCharsToInt(char* value) {
+	int length = strlen(value);
+	int result = 0;
+	for (int i = length - 1; i >= 0; i--) {
+		result = result * 10 + (value[i] - '0');
+	}
+	return result;
+}
 #pragma endregion

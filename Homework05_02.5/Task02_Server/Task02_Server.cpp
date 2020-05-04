@@ -15,6 +15,8 @@
 #include <fstream>
 #include <string>
 #include <process.h>
+#include <vector>
+#include <list>
 
 #define SERVER_ADDR "127.0.0.1"
 #define BUFF_SIZE 2048
@@ -23,6 +25,79 @@
 using namespace std;
 
 #pragma comment(lib, "Ws2_32.lib")
+
+#pragma region CONVERT
+char* ConvertStringToChars(string input, char* output) {
+	int length = input.length();
+	char* result = new char[length];
+	for (int i = 0; i < length; i++) {
+		output[i] = input[i];
+		result[i] = input[i];
+	}
+	output[length] = 0;
+	result[length] = 0;
+	return result;
+}
+
+string ConvertCharsToString(char* value) {
+	int length = strlen(value);
+	string result = "";
+	for (int i = 0; i < length; i++) {
+		result += value[i];
+	}
+	return result;
+}
+
+char* ConvertIntToChars(char* dest, int value) {
+	int index = 0;
+	while (value > 0) {
+		int temp = value % 10;
+		value = value / 10;
+		dest[index] = temp + '0';
+		index++;
+	}
+	dest[index] = 0;
+	return dest;
+}
+
+int ConvertCharsToInt(char* value) {
+	int length = strlen(value);
+	int result = 0;
+	for (int i = length - 1; i >= 0; i--) {
+		result = result * 10 + (value[i] - '0');
+	}
+	return result;
+}
+#pragma endregion
+
+#pragma region EN_DECRYPTION
+string En_Or_decryption(string value, int key, int mode) {
+	string result = "";
+	int length = value.length();
+	for (int i = 0; i < length; i++) {
+		if (mode == 0) result[i] = value[i] + key;
+		else result[i] = value[i] - key;
+	}
+	return result;
+}
+
+vector<string> En_Or_decryptionFileData(string path, int key, int mode) {
+	ifstream file; file.open(path);
+	string temp = "", line;
+	vector<string> result;
+	while (!file.eof()) {
+		getline(file, line);
+		temp += line + "\n";
+		while (temp.length() > BUFF_SIZE) {
+			string encrypString = En_Or_decryption(temp.substr(0, BUFF_SIZE), key, mode);
+			result.push_back(encrypString);
+			temp = temp.substr(BUFF_SIZE);
+		}
+	}
+	file.close();
+	return result;
+}
+#pragma endregion
 
 #pragma region ENCAPSULATION
 //return the message size
@@ -71,6 +146,83 @@ string CreateRamdomFileName() {
 	}
 	return result;
 }
+
+string WcharToString(wchar_t* wchar_str)
+{
+	string str = "";
+	int index = 0;
+	while (wchar_str[index] != 0)
+	{
+		str += (char)wchar_str[index];
+		++index;
+	}
+	return str;
+}
+
+wchar_t* StringToWchar(string str)
+{
+	int index = 0;
+	int count = str.size();
+	wchar_t *ws_str = new wchar_t[count + 1];
+	while (index < str.size())
+	{
+		ws_str[index] = (wchar_t)str[index];
+		index++;
+	}
+	ws_str[index] = 0;
+	return ws_str;
+}
+
+vector<string> ListFileInFolder(string path_folder)
+{
+	WIN32_FIND_DATA find_file_data;
+
+	vector<string> list_file;
+	wchar_t *path_folder_full = StringToWchar(path_folder);
+
+	HANDLE hFind = FindFirstFile(path_folder_full, &find_file_data);
+	list_file.push_back(WcharToString(find_file_data.cFileName));
+	while (FindNextFile(hFind, &find_file_data))
+	{
+		list_file.push_back(WcharToString(find_file_data.cFileName));
+	}
+	return list_file;
+}
+
+bool DELETE_FILE(char* file_path)
+{
+	int ret = remove(file_path);
+	bool is_ok = (ret == 0) ? true : false;
+	return ret;
+}
+
+bool CheckFileName(string fileName){
+	vector<string> fileList = ListFileInFolder("data/*");
+	int length = fileList.size();
+	for (int i = 0; i < length; i++) {
+		if (fileName == fileList[i]) return false;
+	}
+	return true;
+}
+
+bool WriteNewFile(vector<string> payloadList, string* file_name) {
+	try {
+	node1:
+		string fileName = CreateRamdomFileName();
+		if (!CheckFileName(fileName)) goto node1;
+		*file_name = fileName;
+		ofstream file; file.open("data/" + fileName, ios::out);
+		int length = payloadList.size();
+		for (int i = 0; i < length; i++) {
+			file << payloadList[i];
+		}
+		file.close();
+		return true;
+	}
+	catch (exception) {
+		return false;
+	}
+}
 #pragma endregion
 
 #pragma region STREAM TCP
@@ -109,25 +261,58 @@ int SEND_TCP(SOCKET s, char* buff, int flag) {
 #pragma region HANDLER MULTIPLE CLIENT
 unsigned _stdcall Handler(void* param) {
 	SOCKET connSock = (SOCKET)param;
-	char buff[BUFF_SIZE], buffSend[BUFF_SIZE];
+	char buff[BUFF_SIZE + 1], buffSend[BUFF_SIZE];
 	char username[2048], password[2048];
 	char* result = new char[10];
-	int ret, opcode = 0;
+	int ret, opcode = 0, key;
+	list<pair<string, int>> fileInfo;
 
 	while (true) {
 		ret = RECEIVE_TCP(connSock, buff, &opcode, 0);
 		if (ret == SOCKET_ERROR) {
 			printf("Connection shutdown\n");
+			break;
 		}
 		else if (ret == 0) {
 			printf("client close connection\n");
+			break;
 		}
 		else if (ret > 0) {
 			buff[ret] = 0;
 			printf("%s\n", buff);
-			if(opcode == 1 || opcode == 0)
-			/*int ret = SEND_TCP(connSock, AddHeader(buffSend, buff, new char[2]{ "1" }), 0);
-			if (ret == SOCKET_ERROR) printf("can not send message\n");*/
+			if (opcode == 1 || opcode == 0) {
+				buff[ret] = 0;
+				key = ConvertCharsToInt(buff);
+			}
+			vector<string> payloadList;
+			while (true) {
+				ret = RECEIVE_TCP(connSock, buff, &opcode, 0);
+				if (ret == SOCKET_ERROR) {
+					printf("can not receive from client\n");
+					break;
+				}
+				else if (opcode == 2) {
+					buff[ret] = 0;
+					if (!strcmp(buff, "")) {
+						printf("receive fineshed\n");
+						break;
+					}
+					payloadList.push_back(ConvertCharsToString(buff));
+				}
+			}
+			string file_name;
+			WriteNewFile(payloadList, &file_name);
+			fileInfo.push_back(make_pair(file_name, opcode));
+			list<pair<string, int>>::iterator pointer = fileInfo.begin();
+			vector<string> payload = En_Or_decryptionFileData("data/" + pointer->first, key, pointer->second);
+			int length = payload.size();
+			for (int i = 0; i < length; i++) {
+				ConvertStringToChars(payload[i], buff);
+				ret = SEND_TCP(connSock, AddHeader(buffSend, buff, new char[2]{ "2" }), 0);
+				if (ret == SOCKET_ERROR) printf("can not send file\n");
+			}
+			ret = SEND_TCP(connSock, AddHeader(buffSend, new char[1]{ 0 }, new char[2]{ "2" }), 0);
+			if (ret == SOCKET_ERROR) printf("can not send file\n");
 		}
 	}
 	return 0;

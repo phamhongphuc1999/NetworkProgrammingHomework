@@ -68,18 +68,16 @@ vector<string> ListFileInFolder(string path_folder)
 	return list_file;
 }
 
+string GetFileName(string path_file) {
+	WIN32_FIND_DATA fileName;
+	wchar_t *path_file_full = StringToWchar(path_file);
+	HANDLE hFind = FindFirstFile(path_file_full, &fileName);
+	return WcharToString(fileName.cFileName);
+}
+
 int main()
 {
-	string s = "chien tranh giua cac vi sao";
-	string a;
-	for (int i = 0; i < s.length(); i++) {
-		a += s[i] + 100;
-	}
-	string b;
-	for (int i = 0; i < s.length(); i++)
-		b += a[i] - 100;
-	cout << a << endl;
-	cout << b << endl;
+	cout << GetFileName("D:/Documents/sach/README.md");
 	system("pause");
 }
 

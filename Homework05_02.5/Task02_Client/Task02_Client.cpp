@@ -58,6 +58,76 @@ char* AddHeader(char* dest, char* source, char* opcode) {
 }
 #pragma endregion
 
+#pragma region CONVERT
+char* ConvertStringToChars(string input, char* output) {
+	int length = input.length();
+	char* result = new char[length];
+	for (int i = 0; i < length; i++) {
+		output[i] = input[i];
+		result[i] = input[i];
+	}
+	output[length] = 0;
+	result[length] = 0;
+	return result;
+}
+
+string ConvertCharsToString(char* value) {
+	int length = strlen(value);
+	string result = "";
+	for (int i = 0; i < length; i++) {
+		result += value[i];
+	}
+	return result;
+}
+
+char* ConvertIntToChars(char* dest, int value) {
+	int index = 0;
+	while (value > 0) {
+		int temp = value % 10;
+		value = value / 10;
+		dest[index] = temp + '0';
+		index++;
+	}
+	dest[index] = 0;
+	return dest;
+}
+
+int ConvertCharsToInt(char* value) {
+	int length = strlen(value);
+	int result = 0;
+	for (int i = length - 1; i >= 0; i--) {
+		result = result * 10 + (value[i] - '0');
+	}
+	return result;
+}
+
+string WcharToString(wchar_t* wchar_str)
+{
+	string str = "";
+	int index = 0;
+	while (wchar_str[index] != 0)
+	{
+		str += (char)wchar_str[index];
+		++index;
+	}
+	return str;
+}
+
+wchar_t* StringToWchar(string str)
+{
+	int index = 0;
+	int count = str.size();
+	wchar_t *ws_str = new wchar_t[count + 1];
+	while (index < str.size())
+	{
+		ws_str[index] = (wchar_t)str[index];
+		index++;
+	}
+	ws_str[index] = 0;
+	return ws_str;
+}
+#pragma endregion
+
 #pragma region WORK WITH FILE
 vector<string> CreatePayload(string path) {
 	ifstream file; file.open(path);
@@ -73,6 +143,29 @@ vector<string> CreatePayload(string path) {
 	}
 	file.close();
 	return result;
+}
+
+string GetFileName(string path_file) {
+	WIN32_FIND_DATA fileName;
+	wchar_t *path_file_full = StringToWchar(path_file);
+	HANDLE hFind = FindFirstFile(path_file_full, &fileName);
+	return WcharToString(fileName.cFileName);
+}
+
+bool WriteNewFile(vector<string> payloadList, string file_name, string path_foder_to_save) {
+	try {
+	node1:
+		ofstream file; file.open(path_foder_to_save + "/" + file_name, ios::out);
+		int length = payloadList.size();
+		for (int i = 0; i < length; i++) {
+			file << payloadList[i];
+		}
+		file.close();
+		return true;
+	}
+	catch (exception) {
+		return false;
+	}
 }
 #pragma endregion
 
@@ -166,50 +259,6 @@ bool IsContainSpaceOrEmpty(char* input) {
 }
 #pragma endregion
 
-#pragma region CONVERT
-char* ConvertStringToChars(string input, char* output) {
-	int length = input.length();
-	char* result = new char[length];
-	for (int i = 0; i < length; i++) {
-		output[i] = input[i];
-		result[i] = input[i];
-	}
-	output[length] = 0;
-	result[length] = 0;
-	return result;
-}
-
-string ConvertCharsToString(char* value) {
-	int length = strlen(value);
-	string result = "";
-	for (int i = 0; i < length; i++) {
-		result += value[i];
-	}
-	return result;
-}
-
-char* ConvertIntToChars(char* dest, int value) {
-	int index = 0;
-	while (value > 0) {
-		int temp = value % 10;
-		value = value / 10;
-		dest[index] = temp + '0';
-		index++;
-	}
-	dest[index] = 0;
-	return dest;
-}
-
-int ConvertCharsToInt(char* value) {
-	int length = strlen(value);
-	int result = 0;
-	for (int i = length - 1; i >= 0; i--) {
-		result = result * 10 + (value[i] - '0');
-	}
-	return result;
-}
-#pragma endregion
-
 int main()
 {
 	WSADATA wsaData;
@@ -241,7 +290,7 @@ moc1:
 	printf("connected server\n");
 	printf("======================== press 0 to encryption =============================\n");
 	printf("======================== press 1 to decryption =============================\n");
-	char buff[BUFF_SIZE], dest[BUFF_SIZE], opcode[10], keyChar[10];
+	char buff[BUFF_SIZE + 1], dest[BUFF_SIZE], opcode[10], keyChar[10];
 	int ret, key; string path;
 	while (true) {
 		fflush(stdin);
@@ -275,6 +324,7 @@ moc1:
 			goto node1;
 		}
 		vector<string> payload = CreatePayload(path);
+		string file_name = GetFileName(path);
 		int length = payload.size();
 		ret = SEND_TCP(client, AddHeader(dest, ConvertIntToChars(keyChar, key), opcode), 0);
 		if (ret == SOCKET_ERROR) printf("can not send key\n");
@@ -286,12 +336,12 @@ moc1:
 		ret = SEND_TCP(client, AddHeader(dest, new char[1]{ 0 }, new char[2]{ "2" }), 0);
 		if (ret == SOCKET_ERROR) printf("can not send file\n");
 
-
+		//receive file from server
 		payload.clear(); int opcode_int = 0;
 		while (true) {
 			ret = RECEIVE_TCP(client, buff, &opcode_int, 0);
 			if (ret == SOCKET_ERROR) {
-				printf("can not receive from client\n");
+				printf("can not receive from server\n");
 				break;
 			}
 			else if (opcode_int == 2) {
@@ -303,6 +353,8 @@ moc1:
 				payload.push_back(ConvertCharsToString(buff));
 			}
 		}
+		WriteNewFile(payload, file_name + ".enc", "data");
+		printf("save file in foder data\n");
 	}
 	closesocket(client);
 	WSACleanup();

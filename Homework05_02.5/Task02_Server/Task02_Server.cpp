@@ -26,6 +26,16 @@ using namespace std;
 
 #pragma comment(lib, "Ws2_32.lib")
 
+#pragma region COMMON
+struct NewFile
+{
+	vector<string> payload;
+	string file_name;
+};
+
+int lockData;
+#pragma endregion
+
 #pragma region CONVERT
 char* ConvertStringToChars(string input, char* output) {
 	int length = input.length();
@@ -68,6 +78,32 @@ int ConvertCharsToInt(char* value) {
 	}
 	return result;
 }
+
+string WcharToString(wchar_t* wchar_str)
+{
+	string str = "";
+	int index = 0;
+	while (wchar_str[index] != 0)
+	{
+		str += (char)wchar_str[index];
+		++index;
+	}
+	return str;
+}
+
+wchar_t* StringToWchar(string str)
+{
+	int index = 0;
+	int count = str.size();
+	wchar_t *ws_str = new wchar_t[count + 1];
+	while (index < str.size())
+	{
+		ws_str[index] = (wchar_t)str[index];
+		index++;
+	}
+	ws_str[index] = 0;
+	return ws_str;
+}
 #pragma endregion
 
 #pragma region EN_DECRYPTION
@@ -75,8 +111,8 @@ string En_Or_decryption(string value, int key, int mode) {
 	string result = "";
 	int length = value.length();
 	for (int i = 0; i < length; i++) {
-		if (mode == 0) result[i] = value[i] + key;
-		else result[i] = value[i] - key;
+		if (mode == 0) result += value[i] + key;
+		else result += value[i] - key;
 	}
 	return result;
 }
@@ -147,32 +183,6 @@ string CreateRamdomFileName() {
 	return result;
 }
 
-string WcharToString(wchar_t* wchar_str)
-{
-	string str = "";
-	int index = 0;
-	while (wchar_str[index] != 0)
-	{
-		str += (char)wchar_str[index];
-		++index;
-	}
-	return str;
-}
-
-wchar_t* StringToWchar(string str)
-{
-	int index = 0;
-	int count = str.size();
-	wchar_t *ws_str = new wchar_t[count + 1];
-	while (index < str.size())
-	{
-		ws_str[index] = (wchar_t)str[index];
-		index++;
-	}
-	ws_str[index] = 0;
-	return ws_str;
-}
-
 vector<string> ListFileInFolder(string path_folder)
 {
 	WIN32_FIND_DATA find_file_data;
@@ -189,9 +199,11 @@ vector<string> ListFileInFolder(string path_folder)
 	return list_file;
 }
 
-bool DELETE_FILE(char* file_path)
+bool DELETE_FILE(string file_path)
 {
-	int ret = remove(file_path);
+	char* file_path_char = new char[300];
+	file_path_char = ConvertStringToChars(file_path, file_path_char);
+	int ret = remove(file_path_char);
 	bool is_ok = (ret == 0) ? true : false;
 	return ret;
 }
@@ -259,6 +271,34 @@ int SEND_TCP(SOCKET s, char* buff, int flag) {
 #pragma endregion
 
 #pragma region HANDLER MULTIPLE CLIENT
+unsigned _stdcall WriteAsynchronousNewFile(void* param) {
+	while (true)
+	{
+		if (lockData == 0) {
+			lockData = 1;
+			NewFile* file = (NewFile*)param;
+			vector<string> payload = file->payload;
+			WriteNewFile(payload, &file->file_name);
+			lockData = 0;
+			break;
+		}
+	}
+	return 0;
+}
+
+unsigned _stdcall DeleteAsynchronousFile(void* param) {
+	while (true) {
+		if (lockData == 0) {
+			lockData = 1;
+			string* path = (string*)param;
+			DELETE_FILE(*path);
+			lockData = 0;
+			break;
+		}
+	}
+	return 0;
+}
+
 unsigned _stdcall Handler(void* param) {
 	SOCKET connSock = (SOCKET)param;
 	char buff[BUFF_SIZE + 1], buffSend[BUFF_SIZE];
@@ -266,7 +306,7 @@ unsigned _stdcall Handler(void* param) {
 	char* result = new char[10];
 	int ret, opcode = 0, key;
 	list<pair<string, int>> fileInfo;
-
+	pair<string, int> item;
 	while (true) {
 		ret = RECEIVE_TCP(connSock, buff, &opcode, 0);
 		if (ret == SOCKET_ERROR) {
@@ -283,6 +323,7 @@ unsigned _stdcall Handler(void* param) {
 			if (opcode == 1 || opcode == 0) {
 				buff[ret] = 0;
 				key = ConvertCharsToInt(buff);
+				item.second = opcode;
 			}
 			vector<string> payloadList;
 			while (true) {
@@ -300,9 +341,11 @@ unsigned _stdcall Handler(void* param) {
 					payloadList.push_back(ConvertCharsToString(buff));
 				}
 			}
-			string file_name;
-			WriteNewFile(payloadList, &file_name);
-			fileInfo.push_back(make_pair(file_name, opcode));
+			NewFile fInfo; fInfo.payload = payloadList;
+			HANDLE hWrite = (HANDLE)_beginthreadex(0, 0, WriteAsynchronousNewFile, (void*)&fInfo, 0, 0);
+			WaitForSingleObject(hWrite, INFINITE);
+			item.first = fInfo.file_name;
+			fileInfo.push_back(item);
 			list<pair<string, int>>::iterator pointer = fileInfo.begin();
 			vector<string> payload = En_Or_decryptionFileData("data/" + pointer->first, key, pointer->second);
 			int length = payload.size();
@@ -313,6 +356,9 @@ unsigned _stdcall Handler(void* param) {
 			}
 			ret = SEND_TCP(connSock, AddHeader(buffSend, new char[1]{ 0 }, new char[2]{ "2" }), 0);
 			if (ret == SOCKET_ERROR) printf("can not send file\n");
+			string path = "data/" + pointer->first;
+			HANDLE delete_file = (HANDLE)_beginthreadex(0, 0, DeleteAsynchronousFile, (void*)&path, 0, 0);
+			WaitForSingleObject(delete_file, INFINITE);
 		}
 	}
 	return 0;
@@ -347,6 +393,7 @@ node1:
 	printf("SERVER START\n");
 	sockaddr_in clientAddr;
 	int clientAddrLen = sizeof(clientAddr);
+	lockData = 0;
 	while (true) {
 		SOCKET connSock = accept(listenSocket, (sockaddr*)&clientAddr, &clientAddrLen);
 		_beginthreadex(0, 0, Handler, (void*)connSock, 0, 0);

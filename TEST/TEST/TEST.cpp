@@ -68,12 +68,9 @@ string ConvertBytesToString(byte* value, int length) {
 
 int main()
 {
-	char* c = new char[100]{ "chein 10000 tranh 1234" };
-	char* a = new char[100];
-	for (int i = 0; i < 18; i++)
-		a[i] = c[i] + 100000;
-	a[18] = 0;
-	printf("%s%d", a, strlen(a));
+	char c = '1';
+	int a = c - '0';
+	cout << a;
 	system("pause");
 }
 

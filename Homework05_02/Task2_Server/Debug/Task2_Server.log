@@ -1,8 +1,0 @@
-﻿  Task2_Server.cpp
-d:\documents\visualstudio\lap_trinh_mang\homework05_02\task2_server\task2_server.cpp(147): warning C4101: 'username': unreferenced local variable
-d:\documents\visualstudio\lap_trinh_mang\homework05_02\task2_server\task2_server.cpp(147): warning C4101: 'password': unreferenced local variable
-d:\documents\visualstudio\lap_trinh_mang\homework05_02\task2_server\task2_server.cpp(146): warning C4101: 'buffSend': unreferenced local variable
-d:\documents\visualstudio\lap_trinh_mang\homework05_02\task2_server\task2_server.cpp(182): warning C4477: 'scanf_s' : format string '%d' requires an argument of type 'int *', but variadic argument 1 has type 'u_short *'
-  d:\documents\visualstudio\lap_trinh_mang\homework05_02\task2_server\task2_server.cpp(182): note: consider using '%hd' in the format string
-  Task2_Server.vcxproj -> D:\Documents\VisualStudio\Lap_trinh_mang\Homework05_02\Debug\Task2_Server.exe
-  Task2_Server.vcxproj -> D:\Documents\VisualStudio\Lap_trinh_mang\Homework05_02\Debug\Task2_Server.pdb (Full PDB)

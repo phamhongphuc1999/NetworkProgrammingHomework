@@ -26,28 +26,11 @@ using namespace std;
 
 #pragma comment(lib, "Ws2_32.lib")
 
-byte* ConvertStringToBytes(string value, int* lenByte) {
-	int length = value.length();
-	*lenByte = length;
-	byte* result = new byte[length];
-	for (int i = 0; i < length; i++) {
-		result[i] = value[i];
-	}
-	return result;
-}
-
+#pragma region CONVERT
 byte* ConvertIntToBytes(int value) {
 	byte* result = new byte[4];
 	for (int i = 0; i < 4; i++)
 		result[i] = (value >> (i * 8)) & 0xff;
-	return result;
-}
-
-string ConvertBytesToString(byte* value, int length) {
-	string result;
-	for (int i = 0; i < length; i++) {
-		result += value[i];
-	}
 	return result;
 }
 
@@ -62,60 +45,35 @@ int ConvertBytesToInt(byte* value, int length) {
 	return result;
 }
 
-char* AddHearer(byte* payload, int lenPayload, int opcode) {
-	byte* result = new byte[lenPayload + 3];
-	byte* opcodeByte = ConvertIntToBytes(opcode);
-	byte* lenPayloadByte = ConvertIntToBytes(lenPayload);
-	result[0] = opcodeByte[0];
-	result[1] = lenPayloadByte[0];
-	result[2] = lenPayloadByte[1];
-	for (int i = 0; i < lenPayload; i++)
-		result[i + 3] = payload[i];
-	char* resultChar = (char*)result;
-	resultChar[lenPayload + 3] = 0;
-	return resultChar;
-}
-
-byte* Encryption(byte* payload, int length, int opcode) {
+byte* ConvertStringToBytes(string value, int* lenByte) {
+	int length = value.length();
+	*lenByte = length;
 	byte* result = new byte[length];
 	for (int i = 0; i < length; i++) {
-		result[i] = payload[i] + opcode;
+		result[i] = value[i];
 	}
 	return result;
 }
 
-byte* Decryption(byte* payload, int length, int opcode) {
-	byte* result = new byte[length];
+string ConvertBytesToString(byte* value, int length) {
+	string result;
 	for (int i = 0; i < length; i++) {
-		result[i] = payload[i] - opcode;
+		result += value[i];
 	}
 	return result;
 }
+#pragma endregion
 
-vector<string> CreatePayload(string path) {
-	ifstream file; file.open(path);
-	string temp = "", line;
-	vector<string> result;
-	while (!file.eof()) {
-		getline(file, line);
-		temp += line + "\n";
-		while (temp.length() > BUFF_SIZE) {
-			result.push_back(temp.substr(0, BUFF_SIZE));
-			temp = temp.substr(BUFF_SIZE);
-		}
-	}
-	file.close();
-	return result;
-}
+
 
 int main()
 {
-	byte* b = ConvertIntToBytes(100000);
-	printf("%X\n", b[0]);
-	int a = ConvertBytesToInt(&b[0], 2);
-	byte* c = new byte[1]{ b[0] };
-	a = ConvertBytesToInt(c, 2);
-	cout << a << endl;
+	char* c = new char[100]{ "chein 10000 tranh 1234" };
+	char* a = new char[100];
+	for (int i = 0; i < 18; i++)
+		a[i] = c[i] + 100000;
+	a[18] = 0;
+	printf("%s%d", a, strlen(a));
 	system("pause");
 }
 

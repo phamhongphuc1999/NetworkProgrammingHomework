@@ -76,6 +76,39 @@ byte* AddHearer(byte* payload, int lenPayload, int opcode) {
 }
 #pragma endregion
 
+#pragma region STREAM TCP
+int RECEIVE_TCP(SOCKET s, byte* buff, int* opcode, int flag) {
+	int index = 0, ret, result = 0;
+	byte* temp = new byte[3];
+	ret = recv(s, (char*)temp, 3, flag);
+	if (ret == 0) return 0;
+	else if (ret == SOCKET_ERROR) return SOCKET_ERROR;
+	else {
+		*opcode = ConvertBytesToInt(temp, 1);
+		int length = ConvertBytesToInt(&temp[1], 2);
+		while (length > 0) {
+			ret = recv(s, (char*)(&buff[index]), length, 0);
+			if (ret == SOCKET_ERROR) return SOCKET_ERROR;
+			else result += ret;
+			index += ret;
+			length -= ret;
+		}
+		return result;
+	}
+}
+
+int SEND_TCP(SOCKET s, byte* buff, int length, int flag) {
+	int nLeft = length, index = 0, ret, result = 0;
+	while (nLeft > 0) {
+		ret = send(s, (char*)(&buff[index]), nLeft, flag);
+		if (ret == SOCKET_ERROR) return SOCKET_ERROR;
+		else result += ret;
+		nLeft -= ret; index += ret;
+	}
+	return result;
+}
+#pragma endregion
+
 #pragma region EN-DECRYPTION
 byte* Encryption(byte* payload, int length, int opcode) {
 	byte* result = new byte[length];
@@ -107,26 +140,28 @@ string CreateRamdomFileName() {
 }
 #pragma endregion
 
-
 #pragma region HANDLER MULTIPLE CLIENT
 unsigned _stdcall Handler(void* param) {
 	SOCKET connSock = (SOCKET)param;
-	char buff[BUFF_SIZE], buffSend[BUFF_SIZE];
+	byte buff[BUFF_SIZE], buffSend[BUFF_SIZE];
 	char username[2048], password[2048];
 	char* result = new char[10];
-	int ret;
+	int ret, opcode = 0;
 
 	while (true) {
-		ret = recv(connSock, buff, BUFF_SIZE, 0);
+		//ret = recv(connSock, buff, BUFF_SIZE, 0);
+		ret = RECEIVE_TCP(connSock, buff, &opcode, 0);
 		if (ret == SOCKET_ERROR) {
 			printf("Connection shutdown\n");
 			break;
 		}
 		else if (ret > 0) {
-			buff[ret] = 0;
-			printf("%s\n", buff);
-			ret = send(connSock, buff, strlen(buff), 0);
-			if (ret == SOCKET_ERROR) printf("can not send message\n");
+			/*buff[ret] = 0;
+			printf("%s\n", buff);*/
+			string bu = ConvertBytesToString(buff, ret);
+			cout << bu << endl;
+			/*ret = send(connSock, buff, strlen(buff), 0);
+			if (ret == SOCKET_ERROR) printf("can not send message\n");*/
 		}
 	}
 	return 0;

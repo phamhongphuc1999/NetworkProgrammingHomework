@@ -121,7 +121,7 @@ vector<string> CreatePayload(string path) {
 #pragma endregion
 
 #pragma region ENCAPSULATION
-char* AddHearer(byte* payload, int lenPayload, int opcode) {
+byte* AddHearer(byte* payload, int lenPayload, int opcode) {
 	byte* result = new byte[lenPayload + 3];
 	byte* opcodeByte = ConvertIntToBytes(opcode);
 	byte* lenPayloadByte = ConvertIntToBytes(lenPayload);
@@ -130,49 +130,35 @@ char* AddHearer(byte* payload, int lenPayload, int opcode) {
 	result[2] = lenPayloadByte[1];
 	for (int i = 0; i < lenPayload; i++)
 		result[i + 3] = payload[i];
-	char* resultChar = (char*)result;
-	resultChar[lenPayload + 3] = 0;
-	return resultChar;
+	return result;
 }
 #pragma endregion
 
 #pragma region STREAM TCP
-//int RECEIVE_TCP(SOCKET s, char* buff, int* opcode, int flag) {
-//	int index = 0, ret, result = 0;
-//	char* temp = new char[10];
-//	ret = recv(s, temp, 10, flag);
-//	if (ret == 0) return 0;
-//	else if (ret == SOCKET_ERROR) return SOCKET_ERROR;
-//	else {
-//		int length = LENGTH(temp);
-//		while (length > 0) {
-//			ret = recv(s, &buff[index], length, 0);
-//			if (ret == SOCKET_ERROR) return SOCKET_ERROR;
-//			else result += ret;
-//			index += ret;
-//			length -= ret;
-//		}
-//		return result;
-//	}
-//}
-
-int RECEIVE_TCP(SOCKET s, char* buff, int* opcode, int flag) {
+int RECEIVE_TCP(SOCKET s, byte* buff, int* opcode, int flag) {
 	int index = 0, ret, result = 0;
-	char* temp = new char[3];
-	ret = recv(s, temp, 3, flag);
+	byte* temp = new byte[3];
+	ret = recv(s, (char*)temp, 3, flag);
 	if (ret == 0) return 0;
 	else if (ret == SOCKET_ERROR) return SOCKET_ERROR;
 	else {
-		temp[3] = 0;
-		byte* header = (byte*)temp;
-		*opcode = ConvertBytesToInt(header[0]);
+		*opcode = ConvertBytesToInt(temp, 1);
+		int length = ConvertBytesToInt(&temp[1], 2);
+		while (length > 0) {
+			ret = recv(s, (char*)(&buff[index]), length, 0);
+			if (ret == SOCKET_ERROR) return SOCKET_ERROR;
+			else result += ret;
+			index += ret;
+			length -= ret;
+		}
+		return result;
 	}
 }
 
-int SEND_TCP(SOCKET s, char* buff, int flag) {
-	int nLeft = strlen(buff), index = 0, ret, result = 0;
+int SEND_TCP(SOCKET s, byte* buff, int length, int flag) {
+	int nLeft = length, index = 0, ret, result = 0;
 	while (nLeft > 0) {
-		ret = send(s, &buff[index], nLeft, flag);
+		ret = send(s, (char*)(&buff[index]), nLeft, flag);
 		if (ret == SOCKET_ERROR) return SOCKET_ERROR;
 		else result += ret;
 		nLeft -= ret; index += ret;
@@ -180,8 +166,6 @@ int SEND_TCP(SOCKET s, char* buff, int flag) {
 	return result;
 }
 #pragma endregion
-
-
 
 int main()
 {
@@ -191,7 +175,9 @@ int main()
 		printf("version is not supported\n");
 		return 0;
 	}
-	SOCKET client = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+	//SOCKET client = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+	SOCKET client = socket(AF_INET, SOCK_DGRAM, AF_NETBIOS);
+	
 	int tv = 10000;
 	setsockopt(client, SOL_SOCKET, SO_RCVTIMEO, (const char*)(&tv), sizeof(int));
 moc1:
@@ -232,7 +218,7 @@ moc1:
 			cin >> path;
 			if (path == "") break;
 		}
-		else if (opcode== 1) {
+		else if (opcode == 1) {
 		node1_1:
 			printf("enter key to decryption: ");
 			cin >> key;
@@ -250,19 +236,22 @@ moc1:
 		}
 		//vector<string> payloadList = CreatePayload(path);
 		byte* keyChar = ConvertIntToBytes(key);
-		printf("%d\n\n\n\n", strlen(AddHearer(keyChar, 4, opcode)));
-		SEND_TCP(client, AddHearer(keyChar, 4, opcode), 0);
+		SEND_TCP(client, AddHearer(keyChar, 4, opcode), 4, 0);
 
-		/*int ret = send(client, buff, strlen(buff), 0);
-		if (ret == SOCKET_ERROR) printf("can not send message\n");
+		////vector<string> payloadList = CreatePayload(path);
+		//byte* keyChar = ConvertIntToBytes(key);
+		//printf("%d\n\n\n\n", strlen(AddHearer(keyChar, 4, opcode)));
+		//SEND_TCP(client, AddHearer(keyChar, 4, opcode), 0);
 
-		ret = recv(client, buff, BUFF_SIZE, 0);
-		if (ret == SOCKET_ERROR) {
-			printf("ERROR: %d", WSAGetLastError());
-			break;
-		}
-		buff[ret] = 0;
-		printf("%s\n", buff);*/
+		////*int ret = send(client, buff, strlen(buff), 0);
+		//if (ret == SOCKET_ERROR) printf("can not send message\n");
+		//ret = recv(client, buff, BUFF_SIZE, 0);
+		//if (ret == SOCKET_ERROR) {
+		//printf("ERROR: %d", WSAGetLastError());
+		//break;
+		//}
+		//buff[ret] = 0;
+		//printf("%s\n", buff);*/
 	}
 	closesocket(client);
 	WSACleanup();

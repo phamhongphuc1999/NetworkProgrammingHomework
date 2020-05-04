@@ -1,3 +1,14 @@
+#include <conio.h>
+#include <stdio.h>
+#include <winsock2.h>
+#include <WS2tcpip.h>
+#include <SDKDDKVer.h>
+#include <process.h>
+#include <fstream>
+#include <string>
+#include <list>
+#include <vector>
+#include <iostream>
 #pragma region CONVERT
 byte* ConvertIntToBytes(int value) {
 	byte* result = new byte[4];

@@ -33,6 +33,14 @@ struct NewFile
 	string file_name;
 };
 
+struct ENCRYPTION_FILE 
+{
+	string path;
+	int key;
+	int mode;
+	vector<string> payload;
+};
+
 int lockData;
 #pragma endregion
 
@@ -299,6 +307,20 @@ unsigned _stdcall DeleteAsynchronousFile(void* param) {
 	return 0;
 }
 
+unsigned _stdcall En_Or_DecryAsynchromousFile(void* param) {
+	while (true)
+	{
+		if (lockData == 0) {
+			lockData = 1;
+			ENCRYPTION_FILE* temp = (ENCRYPTION_FILE*)param;
+			temp->payload = En_Or_decryptionFileData(temp->path, temp->key, temp->mode);
+			lockData = 0;
+			break;
+		}
+	}
+	return 0;
+}
+
 unsigned _stdcall Handler(void* param) {
 	SOCKET connSock = (SOCKET)param;
 	char buff[BUFF_SIZE + 1], buffSend[BUFF_SIZE];
@@ -346,11 +368,16 @@ unsigned _stdcall Handler(void* param) {
 			WaitForSingleObject(hWrite, INFINITE);
 			item.first = fInfo.file_name;
 			fileInfo.push_back(item);
+
 			list<pair<string, int>>::iterator pointer = fileInfo.begin();
-			vector<string> payload = En_Or_decryptionFileData("data/" + pointer->first, key, pointer->second);
-			int length = payload.size();
+			ENCRYPTION_FILE param;
+			param.path = "data/" + pointer->first;
+			param.key = key; param.mode = pointer->second;
+			HANDLE hEn = (HANDLE)_beginthreadex(0, 0, En_Or_DecryAsynchromousFile, (void*)&param, 0, 0);
+			WaitForSingleObject(hEn, INFINITE);
+			int length = param.payload.size();
 			for (int i = 0; i < length; i++) {
-				ConvertStringToChars(payload[i], buff);
+				ConvertStringToChars(param.payload[i], buff);
 				ret = SEND_TCP(connSock, AddHeader(buffSend, buff, new char[2]{ "2" }), 0);
 				if (ret == SOCKET_ERROR) printf("can not send file\n");
 			}

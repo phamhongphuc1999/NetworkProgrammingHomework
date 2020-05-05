@@ -1,9 +1,9 @@
 ﻿  Task02_Server.cpp
-d:\documents\visualstudio\lap_trinh_mang\homework05_02.5\task02_server\task02_server.cpp(99): warning C4018: '<': signed/unsigned mismatch
-d:\documents\visualstudio\lap_trinh_mang\homework05_02.5\task02_server\task02_server.cpp(208): warning C4800: 'int': forcing value to bool 'true' or 'false' (performance warning)
-d:\documents\visualstudio\lap_trinh_mang\homework05_02.5\task02_server\task02_server.cpp(305): warning C4101: 'username': unreferenced local variable
-d:\documents\visualstudio\lap_trinh_mang\homework05_02.5\task02_server\task02_server.cpp(305): warning C4101: 'password': unreferenced local variable
-d:\documents\visualstudio\lap_trinh_mang\homework05_02.5\task02_server\task02_server.cpp(379): warning C4477: 'scanf_s' : format string '%d' requires an argument of type 'int *', but variadic argument 1 has type 'u_short *'
-  d:\documents\visualstudio\lap_trinh_mang\homework05_02.5\task02_server\task02_server.cpp(379): note: consider using '%hd' in the format string
+d:\documents\visualstudio\lap_trinh_mang\homework05_02.5\task02_server\task02_server.cpp(107): warning C4018: '<': signed/unsigned mismatch
+d:\documents\visualstudio\lap_trinh_mang\homework05_02.5\task02_server\task02_server.cpp(216): warning C4800: 'int': forcing value to bool 'true' or 'false' (performance warning)
+d:\documents\visualstudio\lap_trinh_mang\homework05_02.5\task02_server\task02_server.cpp(327): warning C4101: 'username': unreferenced local variable
+d:\documents\visualstudio\lap_trinh_mang\homework05_02.5\task02_server\task02_server.cpp(327): warning C4101: 'password': unreferenced local variable
+d:\documents\visualstudio\lap_trinh_mang\homework05_02.5\task02_server\task02_server.cpp(406): warning C4477: 'scanf_s' : format string '%d' requires an argument of type 'int *', but variadic argument 1 has type 'u_short *'
+  d:\documents\visualstudio\lap_trinh_mang\homework05_02.5\task02_server\task02_server.cpp(406): note: consider using '%hd' in the format string
   Task02_Server.vcxproj -> D:\Documents\VisualStudio\Lap_trinh_mang\Homework05_02.5\Debug\Task02_Server.exe
   Task02_Server.vcxproj -> D:\Documents\VisualStudio\Lap_trinh_mang\Homework05_02.5\Debug\Task02_Server.pdb (Full PDB)

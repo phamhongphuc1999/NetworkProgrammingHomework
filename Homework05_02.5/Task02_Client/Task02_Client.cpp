@@ -135,7 +135,7 @@ vector<string> CreatePayload(string path) {
 	vector<string> result;
 	while (!file.eof()) {
 		getline(file, line);
-		temp += line + "\n";
+		temp += line + '\n';
 		while (temp.length() > BUFF_SIZE) {
 			result.push_back(temp.substr(0, BUFF_SIZE));
 			temp = temp.substr(BUFF_SIZE);
@@ -154,7 +154,6 @@ string GetFileName(string path_file) {
 
 bool WriteNewFile(vector<string> payloadList, string file_name, string path_foder_to_save) {
 	try {
-	node1:
 		ofstream file; file.open(path_foder_to_save + "/" + file_name, ios::out);
 		int length = payloadList.size();
 		for (int i = 0; i < length; i++) {
@@ -274,7 +273,8 @@ moc1:
 	char* temp = new char[BUFF_SIZE];
 	char* serverAddrIpv4 = new char[BUFF_SIZE];
 	u_short serverPort = 0;
-	fflush(stdin); printf("%s: ", CLIENT_EXE);
+	fflush(stdin); 
+	printf("%s: ", CLIENT_EXE);
 	gets_s(temp, BUFF_SIZE);
 	if (!CheckConnect(temp, &serverPort, serverAddrIpv4)) {
 		printf("Wrong input\n"); goto moc1;
@@ -293,31 +293,32 @@ moc1:
 	char buff[BUFF_SIZE + 1], dest[BUFF_SIZE], opcode[10], keyChar[10];
 	int ret, key; string path;
 	while (true) {
-		fflush(stdin);
 	node1:
 		printf("choice function: ");
 		gets_s(opcode, 10);
 		if (!strcmp(opcode, "0")) {
 		node2:
 			printf("enter key to encryption: ");
-			cin >> key;
+			scanf_s("%d", &key);
 			if (key <= 0) {
 				printf("requere key is unsigned integer\n");
 				goto node2;
 			}
 			printf("enter path of file: ");
 			cin >> path;
+			cin.ignore();
 		}
 		else if (!strcmp(opcode, "1")) {
 		node3:
 			printf("enter key to decryption: ");
-			cin >> key;
+			scanf_s("%d", &key);
 			if (key <= 0) {
 				printf("require key is unsigned integer\n");
 				goto node3;
 			}
 			printf("enter path of file: ");
 			cin >> path;
+			cin.ignore();
 		}
 		else {
 			printf("wrong function\n");
@@ -354,7 +355,7 @@ moc1:
 			}
 		}
 		WriteNewFile(payload, file_name + ".enc", "data");
-		printf("save file in foder data\n");
+		printf("save file in foder data in client\n");
 	}
 	closesocket(client);
 	WSACleanup();

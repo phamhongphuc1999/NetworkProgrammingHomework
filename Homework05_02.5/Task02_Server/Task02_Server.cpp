@@ -333,10 +333,12 @@ unsigned _stdcall Handler(void* param) {
 		ret = RECEIVE_TCP(connSock, buff, &opcode, 0);
 		if (ret == SOCKET_ERROR) {
 			printf("Connection shutdown\n");
+			closesocket(connSock);
 			break;
 		}
 		else if (ret == 0) {
 			printf("client close connection\n");
+			closesocket(connSock);
 			break;
 		}
 		else if (ret > 0) {

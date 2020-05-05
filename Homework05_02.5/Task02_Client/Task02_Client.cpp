@@ -320,6 +320,12 @@ moc1:
 			cin >> path;
 			cin.ignore();
 		}
+		else if (!strcmp(opcode, "")) {
+			printf("end connection");
+			ret = SEND_TCP(client, new char[1]{ 0 }, 0);
+			if (ret == SOCKET_ERROR) printf("can not send message");
+			break;
+		}
 		else {
 			printf("wrong function\n");
 			goto node1;

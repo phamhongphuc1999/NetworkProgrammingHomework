@@ -196,13 +196,13 @@ vector<string> ListFileInFolder(string path_folder)
 	WIN32_FIND_DATA find_file_data;
 
 	vector<string> list_file;
-	wchar_t *path_folder_full = StringToWchar(path_folder);
+	wchar_t* path_folder_full = StringToWchar(path_folder);
 
-	HANDLE hFind = FindFirstFile(path_folder_full, &find_file_data);
-	list_file.push_back(WcharToString(find_file_data.cFileName));
+	HANDLE hFind = FindFirstFile((LPCWSTR)&(*path_folder_full), &find_file_data);
+	list_file.push_back(WcharToString((wchar_t*)find_file_data.cFileName));
 	while (FindNextFile(hFind, &find_file_data))
 	{
-		list_file.push_back(WcharToString(find_file_data.cFileName));
+		list_file.push_back(WcharToString((wchar_t*)find_file_data.cFileName));
 	}
 	return list_file;
 }
@@ -343,7 +343,6 @@ unsigned _stdcall Handler(void* param) {
 		}
 		else if (ret > 0) {
 			buff[ret] = 0;
-			printf("%s\n", buff);
 			if (opcode == 1 || opcode == 0) {
 				buff[ret] = 0;
 				key = ConvertCharsToInt(buff);

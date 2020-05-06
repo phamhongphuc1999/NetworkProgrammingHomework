@@ -1,4 +1,5 @@
-﻿  Task02_Client.cpp
+﻿  stdafx.cpp
+  Task02_Client.cpp
 d:\documents\visualstudio\lap_trinh_mang\homework05_02.5\task02_client\task02_client.cpp(121): warning C4018: '<': signed/unsigned mismatch
   Task02_Client.vcxproj -> D:\Documents\VisualStudio\Lap_trinh_mang\Homework05_02.5\Debug\Task02_Client.exe
   Task02_Client.vcxproj -> D:\Documents\VisualStudio\Lap_trinh_mang\Homework05_02.5\Debug\Task02_Client.pdb (Full PDB)

@@ -77,7 +77,6 @@ string GetFileName(string path_file) {
 
 int main()
 {
-	cout << GetFileName("D:/Documents/sach/README.md");
-	system("pause");
+	
 }
 

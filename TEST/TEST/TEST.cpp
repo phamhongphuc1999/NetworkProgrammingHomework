@@ -26,57 +26,14 @@ using namespace std;
 
 #pragma comment(lib, "Ws2_32.lib")
 
-string WcharToString(wchar_t* wchar_str)
-{
-	string str = "";
-	int index = 0;
-	while (wchar_str[index] != 0)
-	{
-		str += (char)wchar_str[index];
-		++index;
-	}
-	return str;
-}
-
-wchar_t* StringToWchar(string str)
-{
-	int index = 0;
-	int count = str.size();
-	wchar_t *ws_str = new wchar_t[count + 1];
-	while (index < str.size())
-	{
-		ws_str[index] = (wchar_t)str[index];
-		index++;
-	}
-	ws_str[index] = 0;
-	return ws_str;
-}
-
-vector<string> ListFileInFolder(string path_folder)
-{
-	WIN32_FIND_DATA find_file_data;
-
-	vector<string> list_file;
-	wchar_t *path_folder_full = StringToWchar(path_folder);
-
-	HANDLE hFind = FindFirstFile(path_folder_full, &find_file_data);
-	list_file.push_back(WcharToString(find_file_data.cFileName));
-	while (FindNextFile(hFind, &find_file_data))
-	{
-		list_file.push_back(WcharToString(find_file_data.cFileName));
-	}
-	return list_file;
-}
-
-string GetFileName(string path_file) {
-	WIN32_FIND_DATA fileName;
-	wchar_t *path_file_full = StringToWchar(path_file);
-	HANDLE hFind = FindFirstFile(path_file_full, &fileName);
-	return WcharToString(fileName.cFileName);
-}
-
 int main()
 {
-	
+	ofstream i; i.open("D:/Documents/ac.txt", ios::in);
+	string line = "chien tranh giua cac vi sao";
+	i.seekp(10);
+	int ip = i.tellp();
+	i << line;
+	cout << line;
+	system("pause");
 }
 

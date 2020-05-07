@@ -1,9 +1,8 @@
-﻿  stdafx.cpp
-  Task1_Server.cpp
-d:\documents\visualstudio\lap_trinh_mang\homework05_1\task1_server\task1_server.cpp(193): warning C4800: 'int': forcing value to bool 'true' or 'false' (performance warning)
-d:\documents\visualstudio\lap_trinh_mang\homework05_1\task1_server\task1_server.cpp(194): warning C4800: 'int': forcing value to bool 'true' or 'false' (performance warning)
-d:\documents\visualstudio\lap_trinh_mang\homework05_1\task1_server\task1_server.cpp(494): warning C4477: 'scanf_s' : format string '%d' requires an argument of type 'int *', but variadic argument 1 has type 'u_short *'
-  d:\documents\visualstudio\lap_trinh_mang\homework05_1\task1_server\task1_server.cpp(494): note: consider using '%hd' in the format string
-d:\documents\visualstudio\lap_trinh_mang\homework05_1\task1_server\task1_server.cpp(276): warning C4715: 'LOGIN': not all control paths return a value
+﻿  Task1_Server.cpp
+d:\documents\visualstudio\lap_trinh_mang\homework05_1\task1_server\task1_server.cpp(164): warning C4800: 'int': forcing value to bool 'true' or 'false' (performance warning)
+d:\documents\visualstudio\lap_trinh_mang\homework05_1\task1_server\task1_server.cpp(165): warning C4800: 'int': forcing value to bool 'true' or 'false' (performance warning)
+d:\documents\visualstudio\lap_trinh_mang\homework05_1\task1_server\task1_server.cpp(430): warning C4477: 'scanf_s' : format string '%d' requires an argument of type 'int *', but variadic argument 1 has type 'u_short *'
+  d:\documents\visualstudio\lap_trinh_mang\homework05_1\task1_server\task1_server.cpp(430): note: consider using '%hd' in the format string
+d:\documents\visualstudio\lap_trinh_mang\homework05_1\task1_server\task1_server.cpp(249): warning C4715: 'LOGIN': not all control paths return a value
   Task1_Server.vcxproj -> D:\Documents\VisualStudio\Lap_trinh_mang\Homework05_1\Debug\Task1_Server.exe
   Task1_Server.vcxproj -> D:\Documents\VisualStudio\Lap_trinh_mang\Homework05_1\Debug\Task1_Server.pdb (Full PDB)

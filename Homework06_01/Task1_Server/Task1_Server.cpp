@@ -43,15 +43,22 @@ using namespace std;
 /*  type: 0 - already logined, 1 - not logined, 2 - session is locked
 location: location of line in the file
 numberOfError: number of incorrect password attempts
-position: the pointer point in the location in listSession
 */
-struct SESSION
+struct Account
 {
 	char* username;
 	char* password;
 	int numberOfError;
 	int type;
 	int location;
+};
+
+//position: the pointer point in the location in listSession
+struct SESSION
+{
+	Account account;
+	SOCKET connSock;
+	int isActive;
 	list<SESSION*>::iterator position;
 };
 
@@ -65,7 +72,7 @@ struct PARAM {
 //list of session
 list<SESSION*> listSession;
 
-int lockSession;
+int lockSession, isThreadFull;
 
 void Slip(char* input, char* username, char* password) {
 	int index = 0, count = 0;
@@ -161,25 +168,25 @@ int SEND_TCP(SOCKET s, char* buff, int flag) {
 #pragma region HANDLE LOGIN
 char* CHECK_CURRENT_SESSION(SESSION* session, char* username, char* password) {
 	ofstream file; file.open("account.txt", ios::in);
-	bool cmpUser = strcmp(session->username, username);
-	bool cmpPass = strcmp(session->password, password);
-	if (session->type == 0) return new char[4]{ "101" };
+	bool cmpUser = strcmp(session->account.username, username);
+	bool cmpPass = strcmp(session->account.password, password);
+	if (session->account.type == 0) return new char[4]{ "101" };
 	else if (cmpUser) return new char[4]{ "110" };
-	else if (!cmpUser && session->type == 1) {
+	else if (!cmpUser && session->account.type == 1) {
 		if (cmpPass) {
-			session->numberOfError += 1;
-			if (session->numberOfError > 3) {
-				session->type = 3;
-				session->numberOfError = 0;
-				file.seekp(session->location);
+			session->account.numberOfError += 1;
+			if (session->account.numberOfError > 3) {
+				session->account.type = 3;
+				session->account.numberOfError = 0;
+				file.seekp(session->account.location);
 				file << "1";
 				return new char[4]{ "113" };
 			}
 			else return new char[4]{ "111" };
 		}
 		else {
-			session->numberOfError = 0;
-			session->type = 0;
+			session->account.numberOfError = 0;
+			session->account.type = 0;
 			return new char[4]{ "100" };
 		}
 	}
@@ -189,8 +196,8 @@ char* CHECK_CURRENT_SESSION(SESSION* session, char* username, char* password) {
 char* CHECK_OTHER_SESSION(SESSION* session, char* username) {
 	for (list<SESSION*>::iterator item = listSession.begin(); item != listSession.end(); item++) {
 		SESSION* otherSession = *item;
-		if (otherSession != session && otherSession->type == 0) {
-			if (!strcmp(otherSession->username, username)) return new char[4]{ "102" };
+		if (otherSession != session && otherSession->account.type == 0) {
+			if (!strcmp(otherSession->account.username, username)) return new char[4]{ "102" };
 		}
 	}
 	return new char[4]{ "110" };
@@ -227,22 +234,22 @@ char* LOGIN(SESSION* session, char* username, char* password) {
 	if (check == 1) return new char[4]{ "110" };
 	else {
 		Slip(line, username, password);
-		session->location = index + strlen(username) + strlen(password) + 2;
-		strcpy_s(session->username, strlen(username) + 1, username);
-		strcpy_s(session->password, strlen(password) + 1, password);
+		session->account.location = index + strlen(username) + strlen(password) + 2;
+		strcpy_s(session->account.username, strlen(username) + 1, username);
+		strcpy_s(session->account.password, strlen(password) + 1, password);
 		switch (check)
 		{
 		case 0:
-			session->type = 0;
-			session->numberOfError = 0;
+			session->account.type = 0;
+			session->account.numberOfError = 0;
 			return new char[4]{ "100" };
 		case 2:
-			session->type = 1;
-			session->numberOfError += 1;
+			session->account.type = 1;
+			session->account.numberOfError += 1;
 			return new char[4]{ "111" };
 		case 3:
-			session->type = 3;
-			session->numberOfError = 0;
+			session->account.type = 3;
+			session->account.numberOfError = 0;
 			return new char[4]{ "112" };
 		}
 	}
@@ -251,13 +258,13 @@ char* LOGIN(SESSION* session, char* username, char* password) {
 
 #pragma region HANDLE LOGOUT
 char* LOGOUT(SESSION* session, char* username) {
-	if (session->type != 0) return new char[4]{ "210" };
+	if (session->account.type != 0) return new char[4]{ "210" };
 	else {
-		if (!strcmp(session->username, username)) {
-			session->username = new char[BUFF_SIZE];
-			session->password = new char[BUFF_SIZE];
-			session->numberOfError = 0;
-			session->type = 1;
+		if (!strcmp(session->account.username, username)) {
+			session->account.username = new char[BUFF_SIZE];
+			session->account.password = new char[BUFF_SIZE];
+			session->account.numberOfError = 0;
+			session->account.type = 1;
 			return new char[4]{ "200" };
 		}
 		else return new char[4]{ "211" };
@@ -343,74 +350,114 @@ unsigned _stdcall AsynchronousLogout(void* param) {
 }
 
 unsigned _stdcall Handler(void* param) {
-	SOCKET connSock = (SOCKET)param;
+	SOCKET listenSocket = (SOCKET)param;
+	sockaddr_in clientAddr;
 	char buff[BUFF_SIZE], buffSend[BUFF_SIZE];
 	char username[2048], password[2048];
 	char* result = new char[10];
-	int ret;
+	int ret, numberOfClient = 0, nEvents, clientAddrLen;
 
-	SESSION session;
-	session.username = new char[BUFF_SIZE];
-	session.password = new char[BUFF_SIZE];
-	session.numberOfError = 0;
-	session.type = 1; session.location = -1;
-	PARAM temp;
-	temp.username = new char[BUFF_SIZE];
-	temp.password = new char[BUFF_SIZE];
-	temp.session = &session;
-	temp.result = result;
-	HANDLE hCrSession = (HANDLE)_beginthreadex(0, 0, CreateSession, (void*)&session, 0, 0);
-	WaitForSingleObject(hCrSession, INFINITE);
+	SESSION client[FD_SETSIZE], connSock;
+	for (int i = 0; i < FD_SETSIZE; i++) client[i].isActive = 0;
+
+	fd_set readfds, writefds;
+	FD_ZERO(&readfds); FD_ZERO(&writefds);
+	timeval timeoutInterval;
+	timeoutInterval.tv_sec = 10;
+	timeoutInterval.tv_usec = 0;
+
 	while (true) {
-		ret = RECEIVE_TCP(connSock, buff, 0);
-		if (ret == SOCKET_ERROR) {
-			printf("Connection shutdown\n");
-			if (session.type == 0) {
-				printf("The username: %s has not logged out, will perform automatic logout\n", session.username);
-			}
-			HANDLE hRelease = (HANDLE)_beginthreadex(0, 0, ReleaseSession, (void*)&session, 0, 0);
-			WaitForSingleObject(hRelease, INFINITE);
-			closesocket(connSock);
+		FD_SET(listenSocket, &readfds);
+		for (int i = 0; i < FD_SETSIZE; i++) {
+			if (client[i].isActive > 0) FD_SET(client[i].connSock, &readfds);
+		}
+		writefds = readfds;
+		nEvents = select(0, &readfds, 0, 0, 0);
+		if (nEvents < 0) {
+			printf("ERROR: cannot poll socket: %d\n", WSAGetLastError());
 			break;
 		}
-		else if (ret == 0) {
-			printf("client close connection\n");
-			if (session.type == 0) {
-				printf("The username: %s has not logged out, will perform automatic logout\n", session.username);
+		if (FD_ISSET(listenSocket, &readfds)) {
+			clientAddrLen = sizeof(clientAddr);
+			SESSION session;
+			session.connSock = accept(listenSocket, (sockaddr*)&clientAddr, &clientAddrLen);
+			session.account.username = new char[BUFF_SIZE];
+			session.account.password = new char[BUFF_SIZE];
+			session.account.numberOfError = 0;
+			session.account.type = 1;
+			session.account.location = -1;
+			HANDLE hCrSession = (HANDLE)_beginthreadex(0, 0, CreateSession, (void*)&session, 0, 0);
+			WaitForSingleObject(hCrSession, INFINITE);
+			int i;
+			for (i = 0; i < FD_SETSIZE; i++) {
+				if (client[i].isActive <= 0) {
+					client[i] = session; break;
+				}
 			}
-			HANDLE hRelease = (HANDLE)_beginthreadex(0, 0, ReleaseSession, (void*)&session, 0, 0);
-			WaitForSingleObject(hRelease, INFINITE);
-			closesocket(connSock);
-			break;
-		}
-		else if (ret > 0) {
-			buff[ret] = 0;
-			if (CheckDataFromClient(buff)) {
-				strcpy_s(result, 4, "001");
-				int ret = SEND_TCP(connSock, AddHeader(buffSend, result), 0);
-				if (ret == SOCKET_ERROR) printf("can not send message\n");
-			}
-			else {
-				temp.session = &session;
-				if (buff[0] == '1') {
-					Slip(&buff[1], username, password);
-					printf("Request: Login[username: %s, password: %s]\n", username, password);
-					strcpy_s(temp.username, strlen(username) + 1, username);
-					strcpy_s(temp.password, strlen(password) + 1, password);
-					HANDLE hLogin = (HANDLE)_beginthreadex(0, 0, AsynchronousLogin, (void*)&temp, 0, 0);
-					WaitForSingleObject(hLogin, INFINITE);
 
-				}
-				else if (buff[0] == '2') {
-					printf("Request: Logout[username: %s]\n", &buff[1]);
-					strcpy_s(temp.username, strlen(&buff[1]) + 1, &buff[1]);
-					HANDLE hLogout = (HANDLE)_beginthreadex(0, 0, AsynchronousLogout, (void*)&temp, 0, 0);
-					WaitForSingleObject(hLogout, INFINITE);
-				}
-				int ret = SEND_TCP(connSock, AddHeader(buffSend, temp.result), 0);
-				if (ret == SOCKET_ERROR) printf("can not send message\n");
-			}
+			if (i == FD_SETSIZE) isThreadFull = 1;
+			if (--nEvents <= 0) continue;
 		}
+		for (int i = 0; i < FD_SETSIZE; i++) {
+			if (client[i].isActive <= 0) continue;
+			if (FD_ISSET(client[i].connSock, &readfds)) {
+				PARAM temp;
+				temp.username = new char[BUFF_SIZE];
+				temp.password = new char[BUFF_SIZE];
+				temp.session = &client[i];
+				temp.result = result;
+
+				ret = RECEIVE_TCP(client[i].connSock, buff, 0);
+				if (ret == SOCKET_ERROR) {
+					printf("Connection shutdown\n");
+					if (client[i].account.type == 0) {
+						printf("The username: %s has not logged out, will perform automatic logout\n", client[i].account.username);
+					}
+					HANDLE hRelease = (HANDLE)_beginthreadex(0, 0, ReleaseSession, (void*)&client[i], 0, 0);
+					WaitForSingleObject(hRelease, INFINITE);
+					closesocket(client[i].connSock);
+					break;
+				}
+				else if (ret == 0) {
+					printf("client close connection\n");
+					if (client[i].account.type == 0) {
+						printf("The username: %s has not logged out, will perform automatic logout\n", client[i].account.username);
+					}
+					HANDLE hRelease = (HANDLE)_beginthreadex(0, 0, ReleaseSession, (void*)&client[i], 0, 0);
+					WaitForSingleObject(hRelease, INFINITE);
+					closesocket(client[i].connSock);
+					break;
+				}
+				else if (ret > 0) {
+					buff[ret] = 0;
+					if (CheckDataFromClient(buff)) {
+						strcpy_s(result, 4, "001");
+						int ret = SEND_TCP(client[i].connSock, AddHeader(buffSend, result), 0);
+						if (ret == SOCKET_ERROR) printf("can not send message\n");
+					}
+					else {
+						temp.session = &client[i];
+						if (buff[0] == '1') {
+							Slip(&buff[1], username, password);
+							printf("Request: Login[username: %s, password: %s]\n", username, password);
+							strcpy_s(temp.username, strlen(username) + 1, username);
+							strcpy_s(temp.password, strlen(password) + 1, password);
+							HANDLE hLogin = (HANDLE)_beginthreadex(0, 0, AsynchronousLogin, (void*)&temp, 0, 0);
+							WaitForSingleObject(hLogin, INFINITE);
+
+						}
+						else if (buff[0] == '2') {
+							printf("Request: Logout[username: %s]\n", &buff[1]);
+							strcpy_s(temp.username, strlen(&buff[1]) + 1, &buff[1]);
+							HANDLE hLogout = (HANDLE)_beginthreadex(0, 0, AsynchronousLogout, (void*)&temp, 0, 0);
+							WaitForSingleObject(hLogout, INFINITE);
+						}
+						int ret = SEND_TCP(client[i].connSock, AddHeader(buffSend, temp.result), 0);
+						if (ret == SOCKET_ERROR) printf("can not send message\n");
+					}
+				}
+			}
+		}	
 	}
 	return 0;
 }
@@ -442,11 +489,12 @@ node1:
 		printf("can not listen"); return 0;
 	}
 	printf("SERVER START\n");
-	sockaddr_in clientAddr;
-	int clientAddrLen = sizeof(clientAddr);
-	lockSession = 0;
+	
+	lockSession = 0; isThreadFull = 0;
 	while (true) {
-		SOCKET connSock = accept(listenSocket, (sockaddr*)&clientAddr, &clientAddrLen);
-		_beginthreadex(0, 0, Handler, (void*)connSock, 0, 0);
+		if (isThreadFull == 1) {
+			_beginthreadex(0, 0, Handler, (void*)listenSocket, 0, 0);
+			isThreadFull = 0;
+		}
 	}
 }

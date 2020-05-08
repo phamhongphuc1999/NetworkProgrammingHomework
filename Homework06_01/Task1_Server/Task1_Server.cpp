@@ -58,7 +58,6 @@ struct SESSION
 {
 	Account account;
 	SOCKET connSock;
-	int isActive;
 	list<SESSION*>::iterator position;
 };
 
@@ -100,6 +99,16 @@ void Slip(string input, char* username, char* password) {
 		count++;
 	}
 	password[count] = 0;
+}
+
+void InitiateSession(SESSION* session) {
+	session->connSock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+	session->connSock = 0;
+	session->account.username = new char[BUFF_SIZE];
+	session->account.password = new char[BUFF_SIZE];
+	session->account.numberOfError = 0;
+	session->account.type = 1;
+	session->account.location = -1;
 }
 #pragma endregion
 
@@ -167,7 +176,6 @@ int SEND_TCP(SOCKET s, char* buff, int flag) {
 
 #pragma region HANDLE LOGIN
 char* CHECK_CURRENT_SESSION(SESSION* session, char* username, char* password) {
-	ofstream file; file.open("account.txt", ios::in);
 	bool cmpUser = strcmp(session->account.username, username);
 	bool cmpPass = strcmp(session->account.password, password);
 	if (session->account.type == 0) return new char[4]{ "101" };
@@ -178,8 +186,9 @@ char* CHECK_CURRENT_SESSION(SESSION* session, char* username, char* password) {
 			if (session->account.numberOfError > 3) {
 				session->account.type = 3;
 				session->account.numberOfError = 0;
+				ofstream file; file.open("account.txt", ios::in);
 				file.seekp(session->account.location);
-				file << "1";
+				file << "1"; file.close();
 				return new char[4]{ "113" };
 			}
 			else return new char[4]{ "111" };
@@ -228,7 +237,7 @@ char* LOGIN(SESSION* session, char* username, char* password) {
 	while (!file.eof()) {
 		getline(file, line);
 		check = CHECK_SINGE_ACCOUNT(line, username, password);
-		if (check != 1) break;
+		if (check != 1) { file.close(); break; }
 		index += line.length() + 2;
 	}
 	if (check == 1) return new char[4]{ "110" };
@@ -359,14 +368,7 @@ unsigned _stdcall Handler(void* param) {
 
 	SESSION client[FD_SETSIZE];
 	SOCKET connSock;
-	for (int i = 0; i < FD_SETSIZE; i++) {
-		client[i].isActive = 0;
-		client[i].account.username = new char[BUFF_SIZE];
-		client[i].account.password = new char[BUFF_SIZE];
-		client[i].account.numberOfError = 0;
-		client[i].account.type = 1;
-		client[i].account.location = -1;
-	}
+	for (int i = 0; i < FD_SETSIZE; i++) InitiateSession(&client[i]);
 
 	fd_set readfds, writefds;
 	FD_ZERO(&readfds); FD_ZERO(&writefds);
@@ -377,10 +379,7 @@ unsigned _stdcall Handler(void* param) {
 	while (true) {
 		FD_SET(listenSocket, &readfds);
 		for (int i = 0; i < FD_SETSIZE; i++) {
-			if (client[i].isActive > 0) {
-				FD_SET(client[i].connSock, &readfds); //continue;
-			}
-			//printf("123 %d %d\n", i + 1, FD_SETSIZE);
+			if (client[i].connSock > 0) FD_SET(client[i].connSock, &readfds);
 		}
 		writefds = readfds;
 		nEvents = select(0, &readfds, 0, 0, 0);
@@ -393,20 +392,18 @@ unsigned _stdcall Handler(void* param) {
 			connSock = accept(listenSocket, (sockaddr*)&clientAddr, &clientAddrLen);
 			int i;
 			for (i = 0; i < FD_SETSIZE; i++) {
-				if (client[i].isActive <= 0) {
-					client[i].isActive = 1;
+				if (client[i].connSock <= 0) {
 					client[i].connSock = connSock;
 					HANDLE hCrSession = (HANDLE)_beginthreadex(0, 0, CreateSession, (void*)&client[i], 0, 0);
 					WaitForSingleObject(hCrSession, INFINITE);
 					break;
 				}
 			}
-
 			if (i == FD_SETSIZE) isThreadFull = 1;
 			if (--nEvents <= 0) continue;
 		}
 		for (int i = 0; i < FD_SETSIZE; i++) {
-			if (client[i].isActive <= 0) continue;
+			if (client[i].connSock <= 0) continue;
 			if (FD_ISSET(client[i].connSock, &readfds)) {
 				PARAM temp;
 				temp.username = new char[BUFF_SIZE];
@@ -424,8 +421,8 @@ unsigned _stdcall Handler(void* param) {
 					HANDLE hRelease = (HANDLE)_beginthreadex(0, 0, ReleaseSession, (void*)&client[i], 0, 0);
 					WaitForSingleObject(hRelease, INFINITE);
 					closesocket(client[i].connSock);
-					client[i].isActive = 0;
-					break;
+					InitiateSession(&client[i]);
+					continue;
 				}
 				else if (ret > 0) {
 					buff[ret] = 0;

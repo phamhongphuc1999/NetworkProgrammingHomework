@@ -1,4 +1,5 @@
-﻿  stdafx.cpp
-  Task2_Server.cpp
+﻿  Task2_Server.cpp
+d:\documents\visualstudio\lap_trinh_mang\homework06_02\task2_server\task2_server.cpp(324): warning C4477: 'scanf_s' : format string '%d' requires an argument of type 'int *', but variadic argument 1 has type 'u_short *'
+  d:\documents\visualstudio\lap_trinh_mang\homework06_02\task2_server\task2_server.cpp(324): note: consider using '%hd' in the format string
   Task2_Server.vcxproj -> D:\Documents\VisualStudio\Lap_trinh_mang\Homework06_02\Debug\Task2_Server.exe
   Task2_Server.vcxproj -> D:\Documents\VisualStudio\Lap_trinh_mang\Homework06_02\Debug\Task2_Server.pdb (Full PDB)

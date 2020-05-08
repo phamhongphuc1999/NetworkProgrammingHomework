@@ -363,18 +363,9 @@ unsigned _stdcall Handler(void* param) {
 	WaitForSingleObject(hCrSession, INFINITE);
 	while (true) {
 		ret = RECEIVE_TCP(connSock, buff, 0);
-		if (ret == SOCKET_ERROR) {
-			printf("Connection shutdown\n");
-			if (session.type == 0) {
-				printf("The username: %s has not logged out, will perform automatic logout\n", session.username);
-			}
-			HANDLE hRelease = (HANDLE)_beginthreadex(0, 0, ReleaseSession, (void*)&session, 0, 0);
-			WaitForSingleObject(hRelease, INFINITE);
-			closesocket(connSock);
-			break;
-		}
-		else if (ret == 0) {
-			printf("client close connection\n");
+		if (ret <= 0) {
+			if(ret == 0) printf("client close connection\n");
+			else if (ret == SOCKET_ERROR) printf("connection shutdown\n");
 			if (session.type == 0) {
 				printf("The username: %s has not logged out, will perform automatic logout\n", session.username);
 			}

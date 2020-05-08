@@ -357,8 +357,16 @@ unsigned _stdcall Handler(void* param) {
 	char* result = new char[10];
 	int ret, numberOfClient = 0, nEvents, clientAddrLen;
 
-	SESSION client[FD_SETSIZE], connSock;
-	for (int i = 0; i < FD_SETSIZE; i++) client[i].isActive = 0;
+	SESSION client[FD_SETSIZE];
+	SOCKET connSock;
+	for (int i = 0; i < FD_SETSIZE; i++) {
+		client[i].isActive = 0;
+		client[i].account.username = new char[BUFF_SIZE];
+		client[i].account.password = new char[BUFF_SIZE];
+		client[i].account.numberOfError = 0;
+		client[i].account.type = 1;
+		client[i].account.location = -1;
+	}
 
 	fd_set readfds, writefds;
 	FD_ZERO(&readfds); FD_ZERO(&writefds);
@@ -369,7 +377,10 @@ unsigned _stdcall Handler(void* param) {
 	while (true) {
 		FD_SET(listenSocket, &readfds);
 		for (int i = 0; i < FD_SETSIZE; i++) {
-			if (client[i].isActive > 0) FD_SET(client[i].connSock, &readfds);
+			if (client[i].isActive > 0) {
+				FD_SET(client[i].connSock, &readfds); //continue;
+			}
+			//printf("123 %d %d\n", i + 1, FD_SETSIZE);
 		}
 		writefds = readfds;
 		nEvents = select(0, &readfds, 0, 0, 0);
@@ -379,19 +390,15 @@ unsigned _stdcall Handler(void* param) {
 		}
 		if (FD_ISSET(listenSocket, &readfds)) {
 			clientAddrLen = sizeof(clientAddr);
-			SESSION session;
-			session.connSock = accept(listenSocket, (sockaddr*)&clientAddr, &clientAddrLen);
-			session.account.username = new char[BUFF_SIZE];
-			session.account.password = new char[BUFF_SIZE];
-			session.account.numberOfError = 0;
-			session.account.type = 1;
-			session.account.location = -1;
-			HANDLE hCrSession = (HANDLE)_beginthreadex(0, 0, CreateSession, (void*)&session, 0, 0);
-			WaitForSingleObject(hCrSession, INFINITE);
+			connSock = accept(listenSocket, (sockaddr*)&clientAddr, &clientAddrLen);
 			int i;
 			for (i = 0; i < FD_SETSIZE; i++) {
 				if (client[i].isActive <= 0) {
-					client[i] = session; break;
+					client[i].isActive = 1;
+					client[i].connSock = connSock;
+					HANDLE hCrSession = (HANDLE)_beginthreadex(0, 0, CreateSession, (void*)&client[i], 0, 0);
+					WaitForSingleObject(hCrSession, INFINITE);
+					break;
 				}
 			}
 
@@ -408,24 +415,16 @@ unsigned _stdcall Handler(void* param) {
 				temp.result = result;
 
 				ret = RECEIVE_TCP(client[i].connSock, buff, 0);
-				if (ret == SOCKET_ERROR) {
-					printf("Connection shutdown\n");
+				if (ret <= 0) {
+					if (ret == SOCKET_ERROR) printf("Connection shutdown\n");
+					else if (ret == 0) printf("Client close connection\n");
 					if (client[i].account.type == 0) {
 						printf("The username: %s has not logged out, will perform automatic logout\n", client[i].account.username);
 					}
 					HANDLE hRelease = (HANDLE)_beginthreadex(0, 0, ReleaseSession, (void*)&client[i], 0, 0);
 					WaitForSingleObject(hRelease, INFINITE);
 					closesocket(client[i].connSock);
-					break;
-				}
-				else if (ret == 0) {
-					printf("client close connection\n");
-					if (client[i].account.type == 0) {
-						printf("The username: %s has not logged out, will perform automatic logout\n", client[i].account.username);
-					}
-					HANDLE hRelease = (HANDLE)_beginthreadex(0, 0, ReleaseSession, (void*)&client[i], 0, 0);
-					WaitForSingleObject(hRelease, INFINITE);
-					closesocket(client[i].connSock);
+					client[i].isActive = 0;
 					break;
 				}
 				else if (ret > 0) {
@@ -490,7 +489,7 @@ node1:
 	}
 	printf("SERVER START\n");
 	
-	lockSession = 0; isThreadFull = 0;
+	lockSession = 0; isThreadFull = 1;
 	while (true) {
 		if (isThreadFull == 1) {
 			_beginthreadex(0, 0, Handler, (void*)listenSocket, 0, 0);

@@ -181,9 +181,7 @@ int _tmain(int argc, _TCHAR* argv[])
 		if (ret == SOCKET_ERROR) printf("SOCKET ERROR:%d", WSAGetLastError());
 		else if (strlen(buff) > 0) {
 			buff[ret] = 0;
-			printf("Receive from client[%s: %d] %s\n",
-				inet_ntoa(clientAddr.sin_addr),
-				ntohs(clientAddr.sin_port), buff);
+			printf("Receive from client[%s: %d] %s\n", inet_ntoa(clientAddr.sin_addr), ntohs(clientAddr.sin_port), buff);
 
 			if (IsDomainName(buff)) {
 				ResolveResult result = ResolverDomainName(buff);

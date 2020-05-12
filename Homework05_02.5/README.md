@@ -4,4 +4,3 @@
 
 ## tài liệu tham khảo
 - https://phattrienphanmem123az.com/sample-code/code-c-xu-ly-file-folder.html
-<img src="https://anhreviewcapital.com/pic/blog/images/636829277546965833.jpg">

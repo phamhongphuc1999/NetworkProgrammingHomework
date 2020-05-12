@@ -1,6 +1,6 @@
 ﻿  stdafx.cpp
   Task002.cpp
-d:\documents\visualstudio\lap-trinh-mang\homework02\server\task002.cpp(160): warning C4477: 'scanf_s' : format string '%d' requires an argument of type 'int *', but variadic argument 1 has type 'u_short *'
-  d:\documents\visualstudio\lap-trinh-mang\homework02\server\task002.cpp(160): note: consider using '%hd' in the format string
-  Server.vcxproj -> D:\Documents\VisualStudio\lap-trinh-mang\Homework02\Debug\Server.exe
-  Server.vcxproj -> D:\Documents\VisualStudio\lap-trinh-mang\Homework02\Debug\Server.pdb (Full PDB)
+d:\documents\visualstudio\lap_trinh_mang\homework02\server\task002.cpp(160): warning C4477: 'scanf_s' : format string '%d' requires an argument of type 'int *', but variadic argument 1 has type 'u_short *'
+  d:\documents\visualstudio\lap_trinh_mang\homework02\server\task002.cpp(160): note: consider using '%hd' in the format string
+  Server.vcxproj -> D:\Documents\VisualStudio\Lap_trinh_mang\Homework02\Debug\Server.exe
+  Server.vcxproj -> D:\Documents\VisualStudio\Lap_trinh_mang\Homework02\Debug\Server.pdb (Full PDB)

@@ -391,14 +391,17 @@ unsigned _stdcall Handler(void* param) {
 			clientAddrLen = sizeof(clientAddr);
 			connSock = accept(listenSocket, (sockaddr*)&clientAddr, &clientAddrLen);
 			int i;
-			for (i = 0; i < FD_SETSIZE; i++) {
-				if (client[i].connSock <= 0) {
-					client[i].connSock = connSock;
-					HANDLE hCrSession = (HANDLE)_beginthreadex(0, 0, CreateSession, (void*)&client[i], 0, 0);
-					WaitForSingleObject(hCrSession, INFINITE);
-					break;
+			if (connSock != INVALID_SOCKET) {
+				for (i = 0; i < FD_SETSIZE; i++) {
+					if (client[i].connSock <= 0) {
+						client[i].connSock = connSock;
+						HANDLE hCrSession = (HANDLE)_beginthreadex(0, 0, CreateSession, (void*)&client[i], 0, 0);
+						WaitForSingleObject(hCrSession, INFINITE);
+						break;
+					}
 				}
 			}
+			else continue;
 			if (i == FD_SETSIZE) isThreadFull = 1;
 			if (--nEvents <= 0) continue;
 		}

@@ -76,51 +76,6 @@ int SEND_TCP(SOCKET s, char* buff, int flag) {
 	}
 	return result;
 }
-
-int ReceiveFromServer(SOCKET s, int flag) {
-	char* buff = new char[BUFF_SIZE];
-	int ret = RECEIVE_TCP(s, buff, flag);
-	if (ret == SOCKET_ERROR) return SOCKET_ERROR;
-	buff[ret] = 0;
-	if (buff[1] == '1') {
-		switch (buff[0])
-		{
-		case '1':
-			while (true) {
-				buff = new char[BUFF_SIZE];
-				ret = RECEIVE_TCP(s, buff, flag);
-				if (ret == SOCKET_ERROR) return SOCKET_ERROR;
-				buff[ret] = 0;
-				if (!strcmp(buff, "0")) break;
-				printf("Receive from server: %s\n", buff);
-			} break;
-		case '2':
-			printf("get address infomation fall\n");
-			break;
-		case '3':
-			printf("not found infomation\n");
-			break;
-		}
-	}
-	else if (buff[1] == '0') {
-		switch (buff[0])
-		{
-		case '1':
-			ret = RECEIVE_TCP(s, buff, flag);
-			if (ret == SOCKET_ERROR) return SOCKET_ERROR;
-			buff[ret] = 0;
-			printf("Receive from server: %s\n", buff);
-			break;
-		case '2':
-			printf("get ip infomation fall\n");
-			break;
-		case '3':
-			printf("not found infomation\n");
-			break;
-		}
-	}
-	return ret;
-}
 #pragma endregion
 
 #pragma region INPUT AND DATA
@@ -210,16 +165,51 @@ moc1:
 	}
 	printf("connected server\n");
 	while (true) {
-		char buff[BUFF_SIZE], dest[BUFF_SIZE];
+		char buff[BUFF_SIZE], dest[BUFF_SIZE], buffReceive[BUFF_SIZE];
 		fflush(stdin);
 		gets_s(buff);
 		int ret = SEND_TCP(client, AddHeader(dest, buff), 0);
 		if (ret == SOCKET_ERROR) printf("can not send message\n");
-
-		ret = ReceiveFromServer(client, 0);
-		if (ret == SOCKET_ERROR) {
-			printf("ERROR: %d", WSAGetLastError());
-			break;
+		
+		ret = RECEIVE_TCP(client, buffReceive, 0);
+		if (ret == SOCKET_ERROR) return SOCKET_ERROR;
+		buffReceive[ret] = 0;
+		if (buffReceive[1] == '1') {
+			switch (buffReceive[0])
+			{
+			case '1':
+				while (true)
+				{
+					ret = RECEIVE_TCP(client, buffReceive, 0);
+					if (ret == SOCKET_ERROR) return SOCKET_ERROR;
+					buffReceive[ret] = 0;
+					if (!strcmp(buffReceive, "0")) break;
+					printf("Receive from server: %s\n", buffReceive);
+				} break;
+			case '2':
+				printf("get address infomation fall\n");
+				break;
+			case '3':
+				printf("not found infomation\n");
+				break;
+			}
+		}
+		else if (buffReceive[0] == '0') {
+			switch (buffReceive[0])
+			{
+			case '1':
+				ret = RECEIVE_TCP(client, buffReceive, 0);
+				if (ret == SOCKET_ERROR) return SOCKET_ERROR;
+				buffReceive[ret] = 0;
+				printf("Receive from server: %s\n", buffReceive);
+				break;
+			case '2':
+				printf("get ip infomation fall\n");
+				break;
+			case '3':
+				printf("not found infomation\n");
+				break;
+			}
 		}
 	}
 	closesocket(client);

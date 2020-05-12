@@ -233,7 +233,7 @@ void ResolverIPAddress(char* ip, SESSION* session) {
 		session->status = 3;
 	}
 	else {
-		session->hostName = hostName;
+		strcpy_s(session->hostName, strlen(hostName) + 1, hostName);
 		session->status = 1;
 	}
 }

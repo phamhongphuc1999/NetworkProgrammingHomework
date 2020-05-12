@@ -4,5 +4,3 @@
 
 ## tài liệu tham khảo
 https://www.stdio.vn/articles/doc-ghi-file-co-ban-voi-fstream-173
-
-<image src="https://techtalk.vn/wp-content/uploads/2018/10/1_JAJ910fg52ODIRZjHXASBQ.png">

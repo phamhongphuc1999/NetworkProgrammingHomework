@@ -155,11 +155,9 @@ moc1:
 		fflush(stdin); 
 		printf("IP or domain name: ");
 		gets_s(buff);
-		//int ret = send(client, buff, strlen(buff), 0);
 		int ret = SEND_TCP(client, AddHeader(dest, buff), 0);
 		if (ret == SOCKET_ERROR) printf("can not send message\n");
 
-		//ret = recv(client, buff, strlen(buff), 0);
 		ret = RECEIVE_TCP(client, buff, 0);
 		if (ret == SOCKET_ERROR) printf("can not receive from server\n");
 		buff[ret] = 0;
@@ -169,7 +167,6 @@ moc1:
 			case '1':
 				while (true)
 				{
-					//ret = recv(client, buff, BUFF_SIZE, 0);
 					ret = RECEIVE_TCP(client, buff, 0);
 					if (ret == SOCKET_ERROR) printf("can not receive from server\n");
 					buff[ret] = 0;
@@ -188,7 +185,6 @@ moc1:
 			switch (buff[0])
 			{
 			case '1':
-				//ret = recv(client, buff, BUFF_SIZE, 0);
 				ret = RECEIVE_TCP(client, buff, 0);
 				if (ret == SOCKET_ERROR) printf("can not receive from server\n");
 				buff[ret] = 0;

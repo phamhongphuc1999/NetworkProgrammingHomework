@@ -138,6 +138,12 @@ int CheckIP(char* IP) {
 	return result;
 }
 
+//check data that user enter
+/*
+input[IN]: the data that user enter
+port[OUT]: port server listen
+name[OUT]: the IP of server
+*/
 bool CheckConnect(char* input, u_short* port, char* name) {
 	int index = 0, count = 0, length = strlen(input);
 	while (input[index++] == ' ' && index < length); index--;

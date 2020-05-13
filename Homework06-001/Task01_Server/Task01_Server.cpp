@@ -23,24 +23,9 @@
 using namespace std;
 
 #pragma comment(lib, "Ws2_32.lib")
-/*
-001: data type is incorrect
-
-100: Login successful
-101: already logined
-102: already logined in another client
-110: username is incorrect
-111: password is incorrect
-112: session is locked
-113: The session has just been locked because of incorrect login three times
-
-200: logout successful
-210: not logged in, so cannot log out
-211: Not logged out because the username is incorrect
-*/
 
 #pragma region COMMON
-/*  type: 0 - already logined, 1 - not logined, 2 - session is locked
+/*  type: 0 - already logined, 1 - not logined, 2 - account is locked
 location: location of line in the file
 numberOfError: number of incorrect password attempts
 */
@@ -53,7 +38,11 @@ struct Account
 	int location;
 };
 
-//position: the pointer point in the location in listSession
+/*
+  position: the pointer point in the location in listSession
+  account: the account in current session
+  connSock: the socket in current session
+*/
 struct SESSION
 {
 	Account account;
@@ -61,6 +50,11 @@ struct SESSION
 	list<SESSION*>::iterator position;
 };
 
+/* username: username in account
+   password: password in account
+   session: current session
+   result: the result that function login or logout return
+*/
 struct PARAM {
 	char* username;
 	char* password;
@@ -73,6 +67,10 @@ list<SESSION*> listSession;
 
 int lockSession, isThreadFull;
 
+/*  input[IN]: the chars to slip
+    username[OUT]: contain username return by Slip
+	password[OUT]: contain password return by Slip
+*/
 void Slip(char* input, char* username, char* password) {
 	int index = 0, count = 0;
 	while (input[index] != ' ') {
@@ -87,6 +85,10 @@ void Slip(char* input, char* username, char* password) {
 	password[count] = 0;
 }
 
+/*  input[IN]: the chars to slip
+    username[OUT]: contain username return by Slip
+    password[OUT]: contain password return by Slip
+*/
 void Slip(string input, char* username, char* password) {
 	int index = 0, count = 0;
 	while (input[index] != ' ') {
@@ -101,6 +103,7 @@ void Slip(string input, char* username, char* password) {
 	password[count] = 0;
 }
 
+//initiate the session
 void InitiateSession(SESSION* session) {
 	session->connSock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	session->connSock = 0;
@@ -175,6 +178,12 @@ int SEND_TCP(SOCKET s, char* buff, int flag) {
 #pragma endregion
 
 #pragma region HANDLE LOGIN
+//compare the username and password in the current session with username and password that client send to server
+/*
+   session[IN]: the session must be compare
+   username[IN]: the username from client
+   password[IN]: the password from client
+*/
 char* CHECK_CURRENT_SESSION(SESSION* session, char* username, char* password) {
 	bool cmpUser = strcmp(session->account.username, username);
 	bool cmpPass = strcmp(session->account.password, password);
@@ -202,6 +211,11 @@ char* CHECK_CURRENT_SESSION(SESSION* session, char* username, char* password) {
 	else return new char[4]{ "112" };
 }
 
+//compare the username and password in the other sessions with username and password that client send to server
+/*
+session[IN]: the session must be compare
+username[IN]: the username from client
+*/
 char* CHECK_OTHER_SESSION(SESSION* session, char* username) {
 	for (list<SESSION*>::iterator item = listSession.begin(); item != listSession.end(); item++) {
 		SESSION* otherSession = *item;
@@ -212,6 +226,12 @@ char* CHECK_OTHER_SESSION(SESSION* session, char* username) {
 	return new char[4]{ "110" };
 }
 
+//compare the username and password that client send to server with line in account-file
+/*
+line[IN]: a line in account-file
+username[IN]: username from client
+password[IN]: password from client
+*/
 int CHECK_SINGE_ACCOUNT(string line, char* username, char* password) {
 	int index = 0, count = 0, result = -1;
 	int lenLine = line.length(), lenUser = strlen(username), lenPass = strlen(password);
@@ -230,6 +250,12 @@ int CHECK_SINGE_ACCOUNT(string line, char* username, char* password) {
 	else return 0; //login success
 }
 
+//handle login
+/*
+session[IN]: the session must be login
+username[IN]: username from client
+password[IN]: password from client
+*/
 char* LOGIN(SESSION* session, char* username, char* password) {
 	string line;
 	ifstream file; file.open("account.txt", ios::out);
@@ -266,6 +292,11 @@ char* LOGIN(SESSION* session, char* username, char* password) {
 #pragma endregion
 
 #pragma region HANDLE LOGOUT
+//handle logout
+/*
+session[IN]: the session must be logout
+username[IN]: username from client
+*/
 char* LOGOUT(SESSION* session, char* username) {
 	if (session->account.type != 0) return new char[4]{ "210" };
 	else {
@@ -282,6 +313,7 @@ char* LOGOUT(SESSION* session, char* username) {
 #pragma endregion
 
 #pragma region CHECK DATA FROM CLIENT
+//buff[IN]: the data must be check
 int CheckDataFromClient(char* buff) {
 	int length = strlen(buff);
 	if (buff[0] != '1' && buff[0] != '2') return 1;
@@ -297,6 +329,7 @@ int CheckDataFromClient(char* buff) {
 #pragma endregion
 
 #pragma region HANDLER MULTIPLE CLIENT
+//Add session in listSession
 unsigned _stdcall CreateSession(void* param) {
 	while (true)
 	{
@@ -312,6 +345,7 @@ unsigned _stdcall CreateSession(void* param) {
 	return 0;
 }
 
+//Remove session from listSession
 unsigned _stdcall ReleaseSession(void* param) {
 	while (true)
 	{
@@ -326,6 +360,7 @@ unsigned _stdcall ReleaseSession(void* param) {
 	return 0;
 }
 
+//login with username and password
 unsigned _stdcall AsynchronousLogin(void* param) {
 	while (true) {
 		if (lockSession == 0) {
@@ -344,6 +379,7 @@ unsigned _stdcall AsynchronousLogin(void* param) {
 	return 0;
 }
 
+//logout with username
 unsigned _stdcall AsynchronousLogout(void* param) {
 	while (true)
 	{

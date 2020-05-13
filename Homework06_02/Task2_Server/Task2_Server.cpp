@@ -25,6 +25,11 @@ using namespace std;
 #pragma comment(lib, "Ws2_32.lib")
 
 #pragma region COMMON
+//the infomation of resolved result
+/*
+status: 1-success, 2-get infomation fall, 3-not found infomation
+type: 0-damain name, 1-IP
+*/
 struct INFO
 {
 	int status;
@@ -45,6 +50,7 @@ list<SESSION*> listSession;
 
 int lockSession, isThreadFull;
 
+//initiate session
 void InitiateSession(SESSION* session) {
 	session->connSock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	session->connSock = 0;
@@ -120,28 +126,23 @@ int SEND_IP(SESSION session, int flag) {
 	int ret; char* dest = new char[BUFF_SIZE];
 	if (session.info.status == 1) {
 		char* c = new char[3]{ "11" };
-		//ret = send(session.connSock, c, strlen(c), 0);
 		ret = SEND_TCP(session.connSock, AddHeader(dest, c), flag);
 		if (ret == SOCKET_ERROR) return SOCKET_ERROR;
 		list<char*>::iterator pointer = session.info.address.begin();
 		for (; pointer != session.info.address.end(); pointer++) {
-			//ret = send(session.connSock, *pointer, strlen(*pointer), 0);
 			ret = SEND_TCP(session.connSock, AddHeader(dest, *pointer), flag);
 			if (ret == SOCKET_ERROR) return SOCKET_ERROR;
 		}
 		c = new char[2]{ "0" };
-		//ret = send(session.connSock, c, strlen(c), 0);
 		ret = SEND_TCP(session.connSock, AddHeader(dest, c), flag);
 	}
 	else if (session.info.status == 2) {
 		char* temp = new char[3]{ "21" };
-		//ret = send(session.connSock, temp, strlen(temp), flag);
 		ret = SEND_TCP(session.connSock, AddHeader(dest, temp), flag);
 		if (ret == SOCKET_ERROR) return SOCKET_ERROR;
 	}
 	else if (session.info.status == 3) {
 		char* temp = new char[3]{ "31" };
-		//ret = send(session.connSock, temp, strlen(temp), flag);
 		ret = SEND_TCP(session.connSock, AddHeader(dest, temp), flag);
 		if (ret == SOCKET_ERROR) return SOCKET_ERROR;
 	}
@@ -151,23 +152,19 @@ int SEND_IP(SESSION session, int flag) {
 int SEND_DOMAIN_NAME(SESSION session, int flag) {
 	int ret; char* dest = new char[BUFF_SIZE];
 	if (session.info.status == 1) {
-		char* c = new char[3]{ "10" }; 
-		//ret = send(session.connSock, c, strlen(c), flag);
+		char* c = new char[3]{ "10" };
 		ret = SEND_TCP(session.connSock, AddHeader(dest, c), flag);
 		if (ret == SOCKET_ERROR) return SOCKET_ERROR;
-		//ret = send(session.connSock, session.info.hostName, strlen(session.info.hostName), flag);
 		ret = SEND_TCP(session.connSock, AddHeader(dest, session.info.hostName), flag);
 		if (ret == SOCKET_ERROR) return SOCKET_ERROR;
 	}
 	else if (session.info.status == 2) {
 		char* temp = new char[3]{ "20" };
-		//ret = send(session.connSock, temp, strlen(temp), flag);
 		ret = SEND_TCP(session.connSock, AddHeader(dest, temp), flag);
 		if (ret == SOCKET_ERROR) return SOCKET_ERROR;
 	}
 	else if (session.info.status == 3) {
 		char* temp = new char[3]{ "30" };
-		//ret = send(session.connSock, temp, strlen(temp), flag);
 		ret = SEND_TCP(session.connSock, AddHeader(dest, temp), flag);
 		if (ret == SOCKET_ERROR) return SOCKET_ERROR;
 	}
@@ -247,7 +244,6 @@ void ResolverIPAddress(char* ip, SESSION* session) {
 		session->info.status = 3;
 	}
 	else {
-		//session->info.hostName = hostName;
 		strcpy_s(session->info.hostName, strlen(hostName) + 1, hostName);
 		session->info.status = 1;
 	}
@@ -335,7 +331,6 @@ unsigned _stdcall Handler(void* param) {
 		for (int i = 0; i < FD_SETSIZE; i++) {
 			if (client[i].connSock <= 0) continue;
 			if (FD_ISSET(client[i].connSock, &readfds)) {
-				//ret = recv(client[i].connSock, buff, BUFF_SIZE, 0);
 				ret = RECEIVE_TCP(client[i].connSock, buff, 0);
 				if (ret <= 0) {
 					if (ret == SOCKET_ERROR) printf("Connection shutdown\n");

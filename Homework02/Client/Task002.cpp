@@ -18,6 +18,28 @@ using namespace std;
 
 #pragma comment(lib, "Ws2_32.lib")
 
+int IsDomainName(char* name) {
+	int result = 0, index = 0, sum = 0, countPoint = 0;
+	char element = name[0];
+	while (element != '\0') {
+		if ('0' <= element && element <= '9') {
+			sum = sum * 10 + (element - '0');
+			element = name[++index];
+		}
+		else if (element == '.') {
+			countPoint++;
+			if (sum > 255 || countPoint > 3) { result = 1; break; }
+			else {
+				sum = 0; element = name[++index];
+			}
+		}
+		else {
+			result = 1; break;
+		}
+	}
+	return result;
+}
+
 bool CheckInput(char* input, u_short* port, char* name) {
 	int index = 0, count = 0, length = strlen(input);
 	while (input[index++] == ' ' && index < length); index--;
@@ -33,7 +55,7 @@ bool CheckInput(char* input, u_short* port, char* name) {
 		index++;
 	}
 	*port = i;
-	return (i > 0);
+	return (i > 0 && !IsDomainName(name));
 }
 
 int ReceiveFromServer(SOCKET s, int flag, sockaddr_in from_in, int* fromlen) {
@@ -100,11 +122,13 @@ int _tmain(int argc, _TCHAR* argv[])
 	serverAddr.sin_family = AF_INET;
 	serverAddr.sin_port = htons(1000);
 	serverAddr.sin_addr.s_addr = inet_addr(SERVER_ADDR);
+	char* temp = new char[BUFF_SIZE];
+	
 	printf("press empty string to close window\n");
 	while (true) {
 		moc1:
 		char* buff = new char[BUFF_SIZE];
-		char* temp = new char[BUFF_SIZE];
+		
 		printf("%s ", CLIENT_EXE);
 		gets_s(temp, BUFF_SIZE);
 		check = CheckInput(temp, &serverPort, buff);

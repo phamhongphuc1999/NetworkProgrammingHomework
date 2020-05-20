@@ -69,24 +69,6 @@ int SEND_TCP(SOCKET s, char* buff, int flag) {
 	return result;
 }
 
-bool CheckInput(char* input, u_short* port, char* name) {
-	int index = 0, count = 0, length = strlen(input);
-	while (input[index++] == ' ' && index < length); index--;
-	while (index < length && input[index] != ' ') {
-		name[count] = input[index];
-		index++; count++;
-	}
-	name[count++] = 0; u_short i = 0;
-	while (input[index++] == ' ' && index < length); index--;
-	while (index < length && '0' <= input[index] && '9' >= input[index]) {
-		u_short temp = (u_short)(input[index] - '0');
-		i = i * 10 + temp;
-		index++;
-	}
-	*port = i;
-	return (i > 0);
-}
-
 int IsDomainName(char* name) {
 	int result = 0, index = 0, sum = 0, countPoint = 0;
 	char element = name[0];
@@ -109,6 +91,24 @@ int IsDomainName(char* name) {
 	return result;
 }
 
+bool CheckInput(char* input, u_short* port, char* name) {
+	int index = 0, count = 0, length = strlen(input);
+	while (input[index++] == ' ' && index < length); index--;
+	while (index < length && input[index] != ' ') {
+		name[count] = input[index];
+		index++; count++;
+	}
+	name[count++] = 0; u_short i = 0;
+	while (input[index++] == ' ' && index < length); index--;
+	while (index < length && '0' <= input[index] && '9' >= input[index]) {
+		u_short temp = (u_short)(input[index] - '0');
+		i = i * 10 + temp;
+		index++;
+	}
+	*port = i;
+	return (i > 0 && !IsDomainName(name));
+}
+
 int _tmain(int argc, _TCHAR* argv[]) {
 	WSADATA wsaData;
 	WORD version = MAKEWORD(2, 2);
@@ -119,16 +119,13 @@ int _tmain(int argc, _TCHAR* argv[]) {
 	SOCKET client = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	int tv = 10000;
 	setsockopt(client, SOL_SOCKET, SO_RCVTIMEO, (const char*)(&tv), sizeof(int));
-moc1:
 	char* temp = new char[BUFF_SIZE];
 	char* serverAddrIpv4 = new char[BUFF_SIZE];
+moc1:
 	u_short serverPort = 0;
 	fflush(stdin); printf("%s: ", CLIENT_EXE);
 	gets_s(temp, BUFF_SIZE);
 	if (!CheckInput(temp, &serverPort, serverAddrIpv4)) {
-		printf("Wrong input\n"); goto moc1;
-	}
-	else if (IsDomainName(serverAddrIpv4)) {
 		printf("Wrong input\n"); goto moc1;
 	}
 

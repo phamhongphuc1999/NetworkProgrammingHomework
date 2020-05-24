@@ -419,69 +419,95 @@ unsigned _stdcall Handler(void* param) {
 		index = WSAWaitForMultipleEvents(nEvents, events, FALSE, WSA_INFINITE, FALSE);
 		if (index == WSA_WAIT_FAILED) break;
 		index = index - WSA_WAIT_EVENT_0;
-		for (int i = index; i < nEvents; i++) {
-			index = WSAWaitForMultipleEvents(1, &events[i], FALSE, 500, FALSE);
-			if (index != WSA_WAIT_FAILED && index != WSA_WAIT_TIMEOUT) {				WSAEnumNetworkEvents(client[i].connSock, events[i], &sockEvent);				if (sockEvent.lNetworkEvents & FD_ACCEPT) {
-					if (sockEvent.iErrorCode[FD_ACCEPT_BIT] != 0) {
-						printf("ERROR\n");
-						break;
-					}
-				}				if (sockEvent.lNetworkEvents & FD_READ) {
-					PARAM temp;
-					temp.username = new char[BUFF_SIZE];
-					temp.password = new char[BUFF_SIZE];
-					temp.session = &client[i];
-					temp.result = result;
+		if (index != WSA_WAIT_FAILED && index != WSA_WAIT_TIMEOUT) {
+			WSAEnumNetworkEvents(client[index].connSock, events[index], &sockEvent);
+			if (sockEvent.lNetworkEvents & FD_ACCEPT) {
+				if (sockEvent.iErrorCode[FD_ACCEPT_BIT] != 0) {
+					printf("FD_ACCEPT failed with error %d\n", sockEvent.iErrorCode[FD_READ_BIT]);
+					break;
+				}
+				if ((connSock = accept(client[index].connSock, (sockaddr *)&clientAddr, &clientAddrLen)) == SOCKET_ERROR) {
+					printf("accept() failed with error %d\n", WSAGetLastError());
+					break;
+				}
+				if (nEvents == WSA_MAXIMUM_WAIT_EVENTS) isThreadFull = 1;
+				else {
+					for (int j = 1; j < WSA_MAXIMUM_WAIT_EVENTS; j++)
+						if (client[j].connSock == 0) {
+							client[j].connSock = connSock;
+							events[j] = WSACreateEvent();
+							WSAEventSelect(client[j].connSock, events[j], FD_READ | FD_CLOSE);
+							nEvents++;
+							break;
+						}
+				}
+				WSAResetEvent(events[index]);
+			}
 
-					ret = RECEIVE_TCP(client[i].connSock, buff, 0);
-					if (ret <= 0) {
-						if (ret == SOCKET_ERROR) printf("Connection shutdown\n");
-						else if (ret == 0) printf("Client close connection\n");
-						if (client[i].account.type == 0) {
-							printf("The username: %s has not logged out, will perform automatic logout\n", client[i].account.username);
-						}
-						HANDLE hRelease = (HANDLE)_beginthreadex(0, 0, ReleaseSession, (void*)&client[i], 0, 0);
-						WaitForSingleObject(hRelease, INFINITE);
-						closesocket(client[i].connSock);
-						InitiateSession(&client[i]);
-						continue;
-					}
-					else if (ret > 0) {
-						buff[ret] = 0;
-						if (CheckDataFromClient(buff)) {
-							strcpy_s(result, 4, "001");
-							int ret = SEND_TCP(client[i].connSock, AddHeader(buffSend, result), 0);
-							if (ret == SOCKET_ERROR) printf("can not send message\n");
-						}
-						else {
-							temp.session = &client[i];
-							if (buff[0] == '1') {
-								Slip(&buff[1], username, password);
-								printf("Request: Login[username: %s, password: %s]\n", username, password);
-								strcpy_s(temp.username, strlen(username) + 1, username);
-								strcpy_s(temp.password, strlen(password) + 1, password);
-								HANDLE hLogin = (HANDLE)_beginthreadex(0, 0, AsynchronousLogin, (void*)&temp, 0, 0);
-								WaitForSingleObject(hLogin, INFINITE);
+			if (sockEvent.lNetworkEvents & FD_READ) {
+				if (sockEvent.iErrorCode[FD_READ_BIT] != 0) {
+					printf("FD_READ failed with error %d\n", sockEvent.iErrorCode[FD_READ_BIT]);
+					break;
+				}
+				PARAM temp;
+				temp.username = new char[BUFF_SIZE];
+				temp.password = new char[BUFF_SIZE];
+				temp.session = &client[index];
+				temp.result = result;
 
-							}
-							else if (buff[0] == '2') {
-								printf("Request: Logout[username: %s]\n", &buff[1]);
-								strcpy_s(temp.username, strlen(&buff[1]) + 1, &buff[1]);
-								HANDLE hLogout = (HANDLE)_beginthreadex(0, 0, AsynchronousLogout, (void*)&temp, 0, 0);
-								WaitForSingleObject(hLogout, INFINITE);
-							}
-							int ret = SEND_TCP(client[i].connSock, AddHeader(buffSend, temp.result), 0);
-							if (ret == SOCKET_ERROR) printf("can not send message\n");
+				ret = RECEIVE_TCP(client[index].connSock, buff, 0);
+				if (ret <= 0) {
+					if (ret == SOCKET_ERROR) printf("Connection shutdown\n");
+					else if (ret == 0) printf("Client close connection\n");
+					if (client[index].account.type == 0) {
+						printf("The username: %s has not logged out, will perform automatic logout\n", client[index].account.username);
+					}
+					HANDLE hRelease = (HANDLE)_beginthreadex(0, 0, ReleaseSession, (void*)&client[index], 0, 0);
+					WaitForSingleObject(hRelease, INFINITE);
+					closesocket(client[index].connSock);
+					InitiateSession(&client[index]);
+					continue;
+				}
+				else if (ret > 0) {
+					buff[ret] = 0;
+					if (CheckDataFromClient(buff)) {
+						strcpy_s(result, 4, "001");
+						int ret = SEND_TCP(client[index].connSock, AddHeader(buffSend, result), 0);
+						if (ret == SOCKET_ERROR) printf("can not send message\n");
+					}
+					else {
+						temp.session = &client[index];
+						if (buff[0] == '1') {
+							Slip(&buff[1], username, password);
+							printf("Request: Login[username: %s, password: %s]\n", username, password);
+							strcpy_s(temp.username, strlen(username) + 1, username);
+							strcpy_s(temp.password, strlen(password) + 1, password);
+							HANDLE hLogin = (HANDLE)_beginthreadex(0, 0, AsynchronousLogin, (void*)&temp, 0, 0);
+							WaitForSingleObject(hLogin, INFINITE);
+
 						}
+						else if (buff[0] == '2') {
+							printf("Request: Logout[username: %s]\n", &buff[1]);
+							strcpy_s(temp.username, strlen(&buff[1]) + 1, &buff[1]);
+							HANDLE hLogout = (HANDLE)_beginthreadex(0, 0, AsynchronousLogout, (void*)&temp, 0, 0);
+							WaitForSingleObject(hLogout, INFINITE);
+						}
+						int ret = SEND_TCP(client[index].connSock, AddHeader(buffSend, temp.result), 0);
+						if (ret == SOCKET_ERROR) printf("can not send message\n");
 					}
 				}
-				//if (sockEvent.lNetworkEvents & FD_WRITE) {
-				//	//...
-				//}
-				//if (sockEvent.lNetworkEvents & FD_CLOSE) {
-				//	//...
-				//}
-				WSAResetEvent(events[i]);			}
+			}
+
+			if (sockEvent.lNetworkEvents & FD_CLOSE) {
+				if (sockEvent.iErrorCode[FD_CLOSE_BIT] != 0) {
+					printf("FD_READ failed with error %d\n", sockEvent.iErrorCode[FD_CLOSE_BIT]);
+					break;
+				}
+				closesocket(client[index].connSock);
+				InitiateSession(&client[index]);
+				WSACloseEvent(events[index]);
+				nEvents--;
+			}
 		}
 	}
 	return 0;

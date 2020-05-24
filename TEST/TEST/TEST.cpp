@@ -28,12 +28,9 @@ using namespace std;
 
 int main()
 {
-	ofstream i; i.open("D:/Documents/ac.txt", ios::in);
-	string line = "chien tranh giua cac vi sao";
-	i.seekp(10);
-	int ip = i.tellp();
-	i << line;
-	cout << line;
+	DWORD d = MAKEWORD(0, 0);
+	cout << d << endl;
+	cout << d + 1 << endl;
 	system("pause");
 }
 

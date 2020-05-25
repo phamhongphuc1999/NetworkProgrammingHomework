@@ -9,5 +9,5 @@
 - Nhận danh sách  các client có file mà client yêu cầu tìm kiếm
 - Lựa chọn một client trong kết quả server gửi về để yêu cầu download file
 
-#### xem mã code minh họa tại [đây](https://github.com/phamhongphuc1999/Lap_trinh_mang/tree/master/ma-minh-hoa)
+## xem mã code minh họa tại [đây](https://github.com/phamhongphuc1999/Lap_trinh_mang/tree/master/ma-minh-hoa)
 

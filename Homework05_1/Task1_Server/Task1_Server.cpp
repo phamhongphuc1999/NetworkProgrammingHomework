@@ -9,10 +9,8 @@
 #include <winsock2.h>
 #include <WS2tcpip.h>
 #include <SDKDDKVer.h>
-#include <iostream>
 #include <fstream>
 #include <string>
-#include <vector>
 #include <list>
 #include <process.h>
 
@@ -23,35 +21,25 @@
 using namespace std;
 
 #pragma comment(lib, "Ws2_32.lib")
-/*
-001: data type is incorrect
-
-100: Login successful
-101: already logined
-102: already logined in another client
-110: username is incorrect
-111: password is incorrect
-112: session is locked
-113: The session has just been locked because of incorrect login three times
-
-200: logout successful
-210: not logged in, so cannot log out
-211: Not logged out because the username is incorrect
-*/
 
 #pragma region COMMON
 /*  type: 0 - already logined, 1 - not logined, 2 - session is locked
 location: location of line in the file
 numberOfError: number of incorrect password attempts
-position: the pointer point in the location in listSession
 */
-struct SESSION
+struct ACCOUNT
 {
 	char* username;
 	char* password;
 	int numberOfError;
 	int type;
 	int location;
+};
+
+//position: the pointer point in the location in listSession
+struct SESSION
+{
+	ACCOUNT account;
 	list<SESSION*>::iterator position;
 };
 
@@ -160,26 +148,26 @@ int SEND_TCP(SOCKET s, char* buff, int flag) {
 
 #pragma region HANDLE LOGIN
 char* CHECK_CURRENT_SESSION(SESSION* session, char* username, char* password) {
-	ofstream file; file.open("account.txt", ios::in);
-	bool cmpUser = strcmp(session->username, username);
-	bool cmpPass = strcmp(session->password, password);
-	if (session->type == 0) return new char[4]{ "101" };
+	bool cmpUser = strcmp(session->account.username, username);
+	bool cmpPass = strcmp(session->account.password, password);
+	if (session->account.type == 0) return new char[4]{ "101" };
 	else if (cmpUser) return new char[4]{ "110" };
-	else if (!cmpUser && session->type == 1) {
+	else if (!cmpUser && session->account.type == 1) {
 		if (cmpPass) {
-			session->numberOfError += 1;
-			if (session->numberOfError > 3) {
-				session->type = 3;
-				session->numberOfError = 0;
-				file.seekp(session->location);
-				file << "1";
+			session->account.numberOfError += 1;
+			if (session->account.numberOfError > 3) {
+				session->account.type = 3;
+				session->account.numberOfError = 0;
+				ofstream file; file.open("account.txt", ios::in);
+				file.seekp(session->account.location);
+				file << "1"; file.close();
 				return new char[4]{ "113" };
 			}
 			else return new char[4]{ "111" };
 		}
 		else {
-			session->numberOfError = 0;
-			session->type = 0;
+			session->account.numberOfError = 0;
+			session->account.type = 0;
 			return new char[4]{ "100" };
 		}
 	}
@@ -189,8 +177,8 @@ char* CHECK_CURRENT_SESSION(SESSION* session, char* username, char* password) {
 char* CHECK_OTHER_SESSION(SESSION* session, char* username) {
 	for (list<SESSION*>::iterator item = listSession.begin(); item != listSession.end(); item++) {
 		SESSION* otherSession = *item;
-		if (otherSession != session && otherSession->type == 0) {
-			if (!strcmp(otherSession->username, username)) return new char[4]{ "102" };
+		if (otherSession != session && otherSession->account.type == 0) {
+			if (!strcmp(otherSession->account.username, username)) return new char[4]{ "102" };
 		}
 	}
 	return new char[4]{ "110" };
@@ -221,28 +209,28 @@ char* LOGIN(SESSION* session, char* username, char* password) {
 	while (!file.eof()) {
 		getline(file, line);
 		check = CHECK_SINGE_ACCOUNT(line, username, password);
-		if (check != 1) break;
+		if (check != 1) { file.close(); break; }
 		index += line.length() + 2;
 	}
 	if (check == 1) return new char[4]{ "110" };
 	else {
 		Slip(line, username, password);
-		session->location = index + strlen(username) + strlen(password) + 2;
-		strcpy_s(session->username, strlen(username) + 1, username);
-		strcpy_s(session->password, strlen(password) + 1, password);
+		session->account.location = index + strlen(username) + strlen(password) + 2;
+		strcpy_s(session->account.username, strlen(username) + 1, username);
+		strcpy_s(session->account.password, strlen(password) + 1, password);
 		switch (check)
 		{
 		case 0:
-			session->type = 0;
-			session->numberOfError = 0;
+			session->account.type = 0;
+			session->account.numberOfError = 0;
 			return new char[4]{ "100" };
 		case 2:
-			session->type = 1;
-			session->numberOfError += 1;
+			session->account.type = 1;
+			session->account.numberOfError += 1;
 			return new char[4]{ "111" };
 		case 3:
-			session->type = 3;
-			session->numberOfError = 0;
+			session->account.type = 3;
+			session->account.numberOfError = 0;
 			return new char[4]{ "112" };
 		}
 	}
@@ -251,13 +239,13 @@ char* LOGIN(SESSION* session, char* username, char* password) {
 
 #pragma region HANDLE LOGOUT
 char* LOGOUT(SESSION* session, char* username) {
-	if (session->type != 0) return new char[4]{ "210" };
+	if (session->account.type != 0) return new char[4]{ "210" };
 	else {
-		if (!strcmp(session->username, username)) {
-			session->username = new char[BUFF_SIZE];
-			session->password = new char[BUFF_SIZE];
-			session->numberOfError = 0;
-			session->type = 1;
+		if (!strcmp(session->account.username, username)) {
+			session->account.username = new char[BUFF_SIZE];
+			session->account.password = new char[BUFF_SIZE];
+			session->account.numberOfError = 0;
+			session->account.type = 1;
 			return new char[4]{ "200" };
 		}
 		else return new char[4]{ "211" };
@@ -350,10 +338,11 @@ unsigned _stdcall Handler(void* param) {
 	int ret;
 
 	SESSION session;
-	session.username = new char[BUFF_SIZE];
-	session.password = new char[BUFF_SIZE];
-	session.numberOfError = 0;
-	session.type = 1; session.location = -1;
+	session.account.username = new char[BUFF_SIZE];
+	session.account.password = new char[BUFF_SIZE];
+	session.account.numberOfError = 0;
+	session.account.type = 1; 
+	session.account.location = -1;
 	PARAM temp;
 	temp.username = new char[BUFF_SIZE];
 	temp.password = new char[BUFF_SIZE];
@@ -366,8 +355,8 @@ unsigned _stdcall Handler(void* param) {
 		if (ret <= 0) {
 			if(ret == 0) printf("client close connection\n");
 			else if (ret == SOCKET_ERROR) printf("connection shutdown\n");
-			if (session.type == 0) {
-				printf("The username: %s has not logged out, will perform automatic logout\n", session.username);
+			if (session.account.type == 0) {
+				printf("The username: %s has not logged out, will perform automatic logout\n", session.account.username);
 			}
 			HANDLE hRelease = (HANDLE)_beginthreadex(0, 0, ReleaseSession, (void*)&session, 0, 0);
 			WaitForSingleObject(hRelease, INFINITE);

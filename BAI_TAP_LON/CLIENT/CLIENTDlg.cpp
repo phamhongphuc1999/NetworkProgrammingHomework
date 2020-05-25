@@ -28,6 +28,8 @@ BEGIN_MESSAGE_MAP(CCLIENTDlg, CDialogEx)
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
 	ON_BN_CLICKED(btn_browse, &CCLIENTDlg::OnBnClickedbrowse)
+	ON_BN_CLICKED(btn_search, &CCLIENTDlg::OnBnClickedsearch)
+	ON_BN_CLICKED(btn_forward, &CCLIENTDlg::OnBnClickedforward)
 END_MESSAGE_MAP()
 
 
@@ -83,8 +85,6 @@ HCURSOR CCLIENTDlg::OnQueryDragIcon()
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
-
-#pragma region EVENT
 //Click on btn_browse
 void CCLIENTDlg::OnBnClickedbrowse()
 {
@@ -104,7 +104,9 @@ void CCLIENTDlg::OnBnClickedbrowse()
 				contentstr += str;
 				contentstr += _T("\n");
 			}
-			SetDlgItemText(edit_file, l_fDlg.GetPathName());
+			CString cPathToFile = l_fDlg.GetPathName();
+			SetDlgItemText(edit_file, cPathToFile);
+			pathToFile = CW2A(cPathToFile.GetString());
 		}
 		catch (CException* e)
 		{
@@ -113,4 +115,16 @@ void CCLIENTDlg::OnBnClickedbrowse()
 		}
 	}
 }
-#pragma endregion
+
+void CCLIENTDlg::OnBnClickedsearch()
+{
+	string temp = "abc" + pathToFile;
+	CString aaa(temp.c_str(), temp.length());
+	SetDlgItemText(edit_file, aaa);
+}
+
+
+void CCLIENTDlg::OnBnClickedforward()
+{
+
+}

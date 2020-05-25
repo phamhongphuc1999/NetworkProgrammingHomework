@@ -1,6 +1,7 @@
 
 // CLIENTDlg.h : header file
 //
+#include "InteractFile.h"
 
 #pragma once
 
@@ -32,4 +33,9 @@ protected:
 	DECLARE_MESSAGE_MAP()
 public:
 	afx_msg void OnBnClickedbrowse();
+	afx_msg void OnBnClickedsearch();
+private:
+	string pathToFile;
+public:
+	afx_msg void OnBnClickedforward();
 };

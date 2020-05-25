@@ -5,4 +5,5 @@
 #include <string>
 using namespace std;
 
-list<string> CreatePayload(string path);
+bool IsFileExistOrValid(string pathToFile);
+list<string> CreatePayload(string pathToFile);

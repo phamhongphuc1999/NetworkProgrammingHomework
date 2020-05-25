@@ -1,10 +1,15 @@
-#include "InteractFile.h"
 #include "stdafx.h"
+#include "InteractFile.h"
 
-list<string> CreatePayload(string path) {
-	ifstream file; file.open(path);
+bool IsFileExistOrValid(string pathToFile){
+	fstream file; file.open(pathToFile);
+	return file.good();
+}
+
+list<string> CreatePayload(string pathToFile) {
+	ifstream file; file.open(pathToFile, ios::out);
 	string temp = "", line;
-	list <string> result;
+	list<string> result;
 	while (!file.eof()) {
 		getline(file, line);
 		temp += line + '\n';

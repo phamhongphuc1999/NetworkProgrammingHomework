@@ -13,6 +13,7 @@
 #include <string>
 #include <list>
 #include <process.h>
+#include <iostream>
 
 #define SERVER_ADDR "127.0.0.1"
 #define BUFF_SIZE 2048
@@ -24,7 +25,6 @@ using namespace std;
 
 int main()
 {
-	printf("abc");
-	_getch();
+	
 }
 

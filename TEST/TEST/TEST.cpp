@@ -28,9 +28,10 @@ using namespace std;
 
 int main()
 {
-	DWORD d = MAKEWORD(0, 0);
-	cout << d << endl;
-	cout << d + 1 << endl;
+	ifstream f; f.open("./abc.txt", ios::out);
+	string line;
+	getline(f, line);
+	cout << line;
 	system("pause");
 }
 

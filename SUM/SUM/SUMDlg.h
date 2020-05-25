@@ -4,7 +4,7 @@
 
 #pragma once
 #include "afxwin.h"
-
+#include "SUM_class.h"
 
 // CSUMDlg dialog
 class CSUMDlg : public CDialogEx

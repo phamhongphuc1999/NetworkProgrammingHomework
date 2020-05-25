@@ -189,6 +189,7 @@
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="SUM.h" />
     <ClInclude Include="SUMDlg.h" />
+    <ClInclude Include="SUM_class.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
@@ -200,6 +201,7 @@
     </ClCompile>
     <ClCompile Include="SUM.cpp" />
     <ClCompile Include="SUMDlg.cpp" />
+    <ClCompile Include="SUM_class.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="SUM.rc" />

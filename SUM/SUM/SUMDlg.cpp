@@ -88,6 +88,7 @@ HCURSOR CSUMDlg::OnQueryDragIcon()
 void CSUMDlg::OnBnClickedsum()
 {
 	CString aStr, bStr;
+	SUM_class sum;
 	GetDlgItemText(edit_a, aStr);
 	GetDlgItemText(edit_b, bStr);
 	int aInt = _wtoi(aStr);
@@ -96,7 +97,8 @@ void CSUMDlg::OnBnClickedsum()
 		MessageBox(_T("a và b không thể cùng bằng 0", _T("Error"), MB_ICONERROR | MB_OKCANCEL));
 		return;
 	}
+	int resultInt = sum.SUM_ABC(aInt, bInt);
 	CString result;
-	result.Format(_T("%d"), aInt + bInt);
+	result.Format(_T("%d"), resultInt);
 	SetDlgItemText(edit_sum, result);
 }

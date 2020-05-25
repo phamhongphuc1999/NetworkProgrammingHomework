@@ -1,47 +1,47 @@
 ================================================================================
-    MICROSOFT FOUNDATION CLASS LIBRARY : SERVER Project Overview
+    MICROSOFT FOUNDATION CLASS LIBRARY : MFCApplication1 Project Overview
 ===============================================================================
 
-The application wizard has created this SERVER application for
+The application wizard has created this MFCApplication1 application for
 you.  This application not only demonstrates the basics of using the Microsoft
 Foundation Classes but is also a starting point for writing your application.
 
 This file contains a summary of what you will find in each of the files that
-make up your SERVER application.
+make up your MFCApplication1 application.
 
-SERVER.vcxproj
+MFCApplication1.vcxproj
     This is the main project file for VC++ projects generated using an application wizard.
     It contains information about the version of Visual C++ that generated the file, and
     information about the platforms, configurations, and project features selected with the
     application wizard.
 
-SERVER.vcxproj.filters
+MFCApplication1.vcxproj.filters
     This is the filters file for VC++ projects generated using an Application Wizard. 
     It contains information about the assciation between the files in your project 
     and the filters. This association is used in the IDE to show grouping of files with
     similar extensions under a specific node (for e.g. ".cpp" files are associated with the
     "Source Files" filter).
 
-SERVER.h
+MFCApplication1.h
     This is the main header file for the application.  It includes other
     project specific headers (including Resource.h) and declares the
-    CSERVERApp application class.
+    CMFCApplication1App application class.
 
-SERVER.cpp
+MFCApplication1.cpp
     This is the main application source file that contains the application
-    class CSERVERApp.
+    class CMFCApplication1App.
 
-SERVER.rc
+MFCApplication1.rc
     This is a listing of all of the Microsoft Windows resources that the
     program uses.  It includes the icons, bitmaps, and cursors that are stored
     in the RES subdirectory.  This file can be directly edited in Microsoft
     Visual C++. Your project resources are in 1033.
 
-res\SERVER.ico
+res\MFCApplication1.ico
     This is an icon file, which is used as the application's icon.  This
-    icon is included by the main resource file SERVER.rc.
+    icon is included by the main resource file MFCApplication1.rc.
 
-res\SERVER.rc2
+res\MFCApplication1.rc2
     This file contains resources that are not edited by Microsoft
     Visual C++. You should place all resources not editable by
     the resource editor in this file.
@@ -51,23 +51,23 @@ res\SERVER.rc2
 
 The application wizard creates one dialog class:
 
-SERVERDlg.h, SERVERDlg.cpp - the dialog
-    These files contain your CSERVERDlg class.  This class defines
+MFCApplication1Dlg.h, MFCApplication1Dlg.cpp - the dialog
+    These files contain your CMFCApplication1Dlg class.  This class defines
     the behavior of your application's main dialog.  The dialog's template is
-    in SERVER.rc, which can be edited in Microsoft Visual C++.
+    in MFCApplication1.rc, which can be edited in Microsoft Visual C++.
 
 /////////////////////////////////////////////////////////////////////////////
 
 Help Support:
 
-hlp\SERVER.hhp
+hlp\MFCApplication1.hhp
     This file is a help project file. It contains the data needed to
     compile the help files into a .chm file.
 
-hlp\SERVER.hhc
+hlp\MFCApplication1.hhc
     This file lists the contents of the help project.
 
-hlp\SERVER.hhk
+hlp\MFCApplication1.hhk
     This file contains an index of the help topics.
 
 hlp\afxcore.htm
@@ -95,13 +95,13 @@ Other standard files:
 
 StdAfx.h, StdAfx.cpp
     These files are used to build a precompiled header (PCH) file
-    named SERVER.pch and a precompiled types file named StdAfx.obj.
+    named MFCApplication1.pch and a precompiled types file named StdAfx.obj.
 
 Resource.h
     This is the standard header file, which defines new resource IDs.
     Microsoft Visual C++ reads and updates this file.
 
-SERVER.manifest
+MFCApplication1.manifest
 	Application manifest files are used by Windows XP to describe an applications
 	dependency on specific versions of Side-by-Side assemblies. The loader uses this
 	information to load the appropriate assembly from the assembly cache or private

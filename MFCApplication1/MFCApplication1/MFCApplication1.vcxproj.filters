@@ -18,10 +18,10 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="SERVER.h">
+    <ClInclude Include="MFCApplication1.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="SERVERDlg.h">
+    <ClInclude Include="MFCApplication1Dlg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="stdafx.h">
@@ -35,10 +35,10 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="SERVER.cpp">
+    <ClCompile Include="MFCApplication1.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="SERVERDlg.cpp">
+    <ClCompile Include="MFCApplication1Dlg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="stdafx.cpp">
@@ -46,17 +46,17 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="SERVER.rc">
+    <ResourceCompile Include="MFCApplication1.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="res\SERVER.rc2">
+    <None Include="res\MFCApplication1.rc2">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="res\SERVER.ico">
+    <Image Include="res\MFCApplication1.ico">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>

@@ -1,26 +1,26 @@
 
-// SERVER.cpp : Defines the class behaviors for the application.
+// MFCApplication1.cpp : Defines the class behaviors for the application.
 //
 
 #include "stdafx.h"
-#include "SERVER.h"
-#include "SERVERDlg.h"
+#include "MFCApplication1.h"
+#include "MFCApplication1Dlg.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
 
 
-// CSERVERApp
+// CMFCApplication1App
 
-BEGIN_MESSAGE_MAP(CSERVERApp, CWinApp)
+BEGIN_MESSAGE_MAP(CMFCApplication1App, CWinApp)
 	ON_COMMAND(ID_HELP, &CWinApp::OnHelp)
 END_MESSAGE_MAP()
 
 
-// CSERVERApp construction
+// CMFCApplication1App construction
 
-CSERVERApp::CSERVERApp()
+CMFCApplication1App::CMFCApplication1App()
 {
 	// support Restart Manager
 	m_dwRestartManagerSupportFlags = AFX_RESTART_MANAGER_SUPPORT_RESTART;
@@ -30,14 +30,14 @@ CSERVERApp::CSERVERApp()
 }
 
 
-// The one and only CSERVERApp object
+// The one and only CMFCApplication1App object
 
-CSERVERApp theApp;
+CMFCApplication1App theApp;
 
 
-// CSERVERApp initialization
+// CMFCApplication1App initialization
 
-BOOL CSERVERApp::InitInstance()
+BOOL CMFCApplication1App::InitInstance()
 {
 	// InitCommonControlsEx() is required on Windows XP if an application
 	// manifest specifies use of ComCtl32.dll version 6 or later to enable
@@ -70,7 +70,7 @@ BOOL CSERVERApp::InitInstance()
 	// such as the name of your company or organization
 	SetRegistryKey(_T("Local AppWizard-Generated Applications"));
 
-	CSERVERDlg dlg;
+	CMFCApplication1Dlg dlg;
 	m_pMainWnd = &dlg;
 	INT_PTR nResponse = dlg.DoModal();
 	if (nResponse == IDOK)

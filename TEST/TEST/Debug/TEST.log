@@ -1,3 +1,16 @@
 ﻿  TEST.cpp
-  TEST.vcxproj -> D:\Documents\VisualStudio\Lap_trinh_mang\TEST\Debug\TEST.exe
-  TEST.vcxproj -> D:\Documents\VisualStudio\Lap_trinh_mang\TEST\Debug\TEST.pdb (Full PDB)
+TEST.obj : error LNK2019: unresolved external symbol __imp__accept@12 referenced in function "long __stdcall windowProc(struct HWND__ *,unsigned int,unsigned int,long)" (?windowProc@@YGJPAUHWND__@@IIJ@Z)
+TEST.obj : error LNK2019: unresolved external symbol __imp__bind@12 referenced in function _WinMain@16
+TEST.obj : error LNK2019: unresolved external symbol __imp__closesocket@4 referenced in function "long __stdcall windowProc(struct HWND__ *,unsigned int,unsigned int,long)" (?windowProc@@YGJPAUHWND__@@IIJ@Z)
+TEST.obj : error LNK2019: unresolved external symbol __imp__htonl@4 referenced in function _WinMain@16
+TEST.obj : error LNK2019: unresolved external symbol __imp__htons@4 referenced in function _WinMain@16
+TEST.obj : error LNK2019: unresolved external symbol __imp__listen@8 referenced in function _WinMain@16
+TEST.obj : error LNK2019: unresolved external symbol __imp__recv@16 referenced in function "long __stdcall windowProc(struct HWND__ *,unsigned int,unsigned int,long)" (?windowProc@@YGJPAUHWND__@@IIJ@Z)
+TEST.obj : error LNK2019: unresolved external symbol __imp__send@16 referenced in function "long __stdcall windowProc(struct HWND__ *,unsigned int,unsigned int,long)" (?windowProc@@YGJPAUHWND__@@IIJ@Z)
+TEST.obj : error LNK2019: unresolved external symbol __imp__shutdown@8 referenced in function "long __stdcall windowProc(struct HWND__ *,unsigned int,unsigned int,long)" (?windowProc@@YGJPAUHWND__@@IIJ@Z)
+TEST.obj : error LNK2019: unresolved external symbol __imp__socket@12 referenced in function _WinMain@16
+TEST.obj : error LNK2019: unresolved external symbol __imp__WSAStartup@8 referenced in function _WinMain@16
+TEST.obj : error LNK2019: unresolved external symbol __imp__WSACleanup@0 referenced in function "long __stdcall windowProc(struct HWND__ *,unsigned int,unsigned int,long)" (?windowProc@@YGJPAUHWND__@@IIJ@Z)
+TEST.obj : error LNK2019: unresolved external symbol __imp__WSAAsyncSelect@16 referenced in function "long __stdcall windowProc(struct HWND__ *,unsigned int,unsigned int,long)" (?windowProc@@YGJPAUHWND__@@IIJ@Z)
+MSVCRTD.lib(exe_main.obj) : error LNK2019: unresolved external symbol _main referenced in function "int __cdecl invoke_main(void)" (?invoke_main@@YAHXZ)
+D:\Documents\VisualStudio\Lap_trinh_mang\TEST\Debug\TEST.exe : fatal error LNK1120: 14 unresolved externals

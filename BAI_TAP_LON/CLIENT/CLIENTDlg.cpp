@@ -11,10 +11,7 @@
 #define new DEBUG_NEW
 #endif
 
-
 // CCLIENTDlg dialog
-
-
 
 CCLIENTDlg::CCLIENTDlg(CWnd* pParent /*=NULL*/)
 	: CDialogEx(IDD_CLIENT_DIALOG, pParent)
@@ -30,6 +27,7 @@ void CCLIENTDlg::DoDataExchange(CDataExchange* pDX)
 BEGIN_MESSAGE_MAP(CCLIENTDlg, CDialogEx)
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
+	ON_BN_CLICKED(btn_browse, &CCLIENTDlg::OnBnClickedbrowse)
 END_MESSAGE_MAP()
 
 
@@ -85,3 +83,34 @@ HCURSOR CCLIENTDlg::OnQueryDragIcon()
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
+
+#pragma region EVENT
+//Click on btn_browse
+void CCLIENTDlg::OnBnClickedbrowse()
+{
+	CFileDialog l_fDlg(TRUE);
+	int iRet = l_fDlg.DoModal();
+	CString l_strFileName;
+	l_strFileName = l_fDlg.GetPathName();
+
+	if (iRet == IDOK) {
+		try
+		{
+			CStdioFile file(l_strFileName, CFile::modeRead);
+			CString str, contentstr = _T("");
+
+			while (file.ReadString(str))
+			{
+				contentstr += str;
+				contentstr += _T("\n");
+			}
+			SetDlgItemText(edit_file, l_fDlg.GetPathName());
+		}
+		catch (CException* e)
+		{
+			MessageBox(_T("Error"));
+			e->Delete();
+		}
+	}
+}
+#pragma endregion

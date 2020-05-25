@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "SUM_class.h"
 
-
 SUM_class::SUM_class()
 {
 }

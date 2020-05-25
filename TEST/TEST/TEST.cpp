@@ -28,10 +28,7 @@ using namespace std;
 
 int main()
 {
-	ifstream f; f.open("./abc.txt", ios::out);
-	string line;
-	getline(f, line);
-	cout << line;
+	printf("%d\n\n", WSA_MAXIMUM_WAIT_EVENTS);
 	system("pause");
 }
 

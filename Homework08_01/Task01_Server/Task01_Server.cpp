@@ -9,10 +9,8 @@
 #include <winsock2.h>
 #include <WS2tcpip.h>
 #include <SDKDDKVer.h>
-#include <iostream>
 #include <fstream>
 #include <string>
-#include <vector>
 #include <list>
 #include <process.h>
 
@@ -67,7 +65,7 @@ list<SESSION*> listSession;
 
 int lockSession, isThreadFull;
 
-/*  input[IN]: the chars to slip
+/* input[IN]: the chars to slip
 username[OUT]: contain username return by Slip
 password[OUT]: contain password return by Slip
 */
@@ -85,7 +83,7 @@ void Slip(char* input, char* username, char* password) {
 	password[count] = 0;
 }
 
-/*  input[IN]: the chars to slip
+/* input[IN]: the chars to slip
 username[OUT]: contain username return by Slip
 password[OUT]: contain password return by Slip
 */
@@ -195,7 +193,7 @@ char* CHECK_CURRENT_SESSION(SESSION* session, char* username, char* password) {
 			if (session->account.numberOfError > 3) {
 				session->account.type = 3;
 				session->account.numberOfError = 0;
-				ofstream file; file.open("D:/Documents/VisualStudio/Lap_trinh_mang/Homework08_01/Debug/account.txt", ios::in);
+				ofstream file; file.open("account.txt", ios::in);
 				file.seekp(session->account.location);
 				file << "1"; file.close();
 				return new char[4]{ "113" };
@@ -258,7 +256,7 @@ password[IN]: password from client
 */
 char* LOGIN(SESSION* session, char* username, char* password) {
 	string line;
-	ifstream file; file.open("D:/Documents/VisualStudio/Lap_trinh_mang/Homework08_01/Debug/account.txt", ios::out);
+	ifstream file; file.open("account.txt", ios::out);
 	int check = 1, index = 0;
 	while (!file.eof()) {
 		getline(file, line);
@@ -408,7 +406,7 @@ unsigned _stdcall Handler(void* param) {
 	WSAEVENT events[WSA_MAXIMUM_WAIT_EVENTS];
 	events[0] = WSACreateEvent();
 	WSANETWORKEVENTS sockEvent;
-	
+
 	for (int i = 0; i < WSA_MAXIMUM_WAIT_EVENTS; i++) InitiateSession(&client[i]);
 	client[0].connSock = listenSocket;
 	WSAEventSelect(client[0].connSock, events[0], FD_ACCEPT | FD_CLOSE);
@@ -443,27 +441,13 @@ unsigned _stdcall Handler(void* param) {
 						}
 				}
 				WSAResetEvent(events[index]);
+				continue;
 			}
 
 			if (sockEvent.lNetworkEvents & FD_READ) {
-				int error = sockEvent.iErrorCode[FD_READ_BIT];
-				if (error != 0) {
-					if (error == 10053) {
-						printf("Connection shutdown\n");
-						if (client[index].account.type == 0) {
-							printf("The username: %s has not logged out, will perform automatic logout\n", client[index].account.username);
-						}
-						HANDLE hRelease = (HANDLE)_beginthreadex(0, 0, ReleaseSession, (void*)&client[index], 0, 0);
-						WaitForSingleObject(hRelease, INFINITE);
-						closesocket(client[index].connSock);
-						InitiateSession(&client[index]);
-						WSACloseEvent(events[index]);
-						nEvents--; continue;
-					}
-					else {
-						printf("FD_READ failed with error %d\n", sockEvent.iErrorCode[FD_READ_BIT]);
-						break;
-					}
+				if (sockEvent.iErrorCode[FD_READ_BIT] != 0) {
+					printf("FD_READ failed with error %d\n", sockEvent.iErrorCode[FD_READ_BIT]);
+					break;
 				}
 
 				PARAM temp;
@@ -498,13 +482,22 @@ unsigned _stdcall Handler(void* param) {
 
 					int ret = SEND_TCP(client[index].connSock, AddHeader(buffSend, temp.result), 0);
 					if (ret == SOCKET_ERROR) printf("can not send message\n");
+					continue;
 				}
 			}
 
 			if (sockEvent.lNetworkEvents & FD_CLOSE) {
 				if (sockEvent.iErrorCode[FD_CLOSE_BIT] != 0) {
-					printf("FD_READ failed with error %d\n", sockEvent.iErrorCode[FD_CLOSE_BIT]);
-					break;
+					printf("Connection shutdown\n");
+					if (client[index].account.type == 0) {
+						printf("The username: %s has not logged out, will perform automatic logout\n", client[index].account.username);
+					}
+					HANDLE hRelease = (HANDLE)_beginthreadex(0, 0, ReleaseSession, (void*)&client[index], 0, 0);
+					WaitForSingleObject(hRelease, INFINITE);
+					closesocket(client[index].connSock);
+					InitiateSession(&client[index]);
+					WSACloseEvent(events[index]);
+					nEvents--; continue;
 				}
 				printf("Client close connection\n");
 				if (client[index].account.type == 0) {

@@ -19,7 +19,7 @@
 #define SERVER_ADDR "127.0.0.1"
 #define BUFF_SIZE 2048
 #define SERVER_EXE "Task2_Server.exe"
-#define MAX_CLIENT 1024
+#define MAX_CLIENT 64
 using namespace std;
 
 #pragma comment(lib, "Ws2_32.lib")
@@ -400,19 +400,18 @@ unsigned _stdcall Handler(void* param) {
 	char buff[BUFF_SIZE], buffSend[BUFF_SIZE];
 	char username[2048], password[2048];
 	char* result = new char[10];
-	int ret, numberOfClient = 0, clientAddrLen;
+	int ret, clientAddrLen = sizeof(clientAddr);
 	DWORD nEvents = MAKEWORD(0, 0), i, index;
 	SOCKET connSock;
 
 	SESSION client[WSA_MAXIMUM_WAIT_EVENTS];
 	WSAEVENT events[WSA_MAXIMUM_WAIT_EVENTS];
-	WSAEVENT newEvent = WSACreateEvent();
+	events[0] = WSACreateEvent();
 	WSANETWORKEVENTS sockEvent;
 	
 	for (int i = 0; i < WSA_MAXIMUM_WAIT_EVENTS; i++) InitiateSession(&client[i]);
-	WSAEventSelect(listenSocket, newEvent, FD_ACCEPT | FD_CLOSE);
 	client[0].connSock = listenSocket;
-	events[0] = newEvent;
+	WSAEventSelect(client[0].connSock, events[0], FD_ACCEPT | FD_CLOSE);
 	nEvents++;
 
 	while (true) {
@@ -428,7 +427,7 @@ unsigned _stdcall Handler(void* param) {
 				}
 				if ((connSock = accept(client[index].connSock, (sockaddr *)&clientAddr, &clientAddrLen)) == SOCKET_ERROR) {
 					printf("accept() failed with error %d\n", WSAGetLastError());
-					break;
+					continue;
 				}
 				if (nEvents == WSA_MAXIMUM_WAIT_EVENTS) isThreadFull = 1;
 				else {
@@ -482,9 +481,9 @@ unsigned _stdcall Handler(void* param) {
 							printf("Request: Login[username: %s, password: %s]\n", username, password);
 							strcpy_s(temp.username, strlen(username) + 1, username);
 							strcpy_s(temp.password, strlen(password) + 1, password);
-							HANDLE hLogin = (HANDLE)_beginthreadex(0, 0, AsynchronousLogin, (void*)&temp, 0, 0);
-							WaitForSingleObject(hLogin, INFINITE);
-
+							/*HANDLE hLogin = (HANDLE)_beginthreadex(0, 0, AsynchronousLogin, (void*)&temp, 0, 0);
+							WaitForSingleObject(hLogin, INFINITE);*/
+							AsynchronousLogin((void*)&temp);
 						}
 						else if (buff[0] == '2') {
 							printf("Request: Logout[username: %s]\n", &buff[1]);
@@ -492,6 +491,7 @@ unsigned _stdcall Handler(void* param) {
 							HANDLE hLogout = (HANDLE)_beginthreadex(0, 0, AsynchronousLogout, (void*)&temp, 0, 0);
 							WaitForSingleObject(hLogout, INFINITE);
 						}
+
 						int ret = SEND_TCP(client[index].connSock, AddHeader(buffSend, temp.result), 0);
 						if (ret == SOCKET_ERROR) printf("can not send message\n");
 					}

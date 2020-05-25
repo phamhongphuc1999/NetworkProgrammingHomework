@@ -400,7 +400,7 @@ unsigned _stdcall Handler(void* param) {
 	char buff[BUFF_SIZE], buffSend[BUFF_SIZE];
 	char username[2048], password[2048];
 	char* result = new char[10];
-	int ret, numberOfClient = 0, nEvents, clientAddrLen;
+	int ret, numberOfClient = 0, nEvents, clientAddrLen = sizeof(clientAddr);
 
 	SESSION client[FD_SETSIZE];
 	SOCKET connSock;
@@ -424,7 +424,6 @@ unsigned _stdcall Handler(void* param) {
 			break;
 		}
 		if (FD_ISSET(listenSocket, &readfds)) {
-			clientAddrLen = sizeof(clientAddr);
 			connSock = accept(listenSocket, (sockaddr*)&clientAddr, &clientAddrLen);
 			int i;
 			if (connSock != INVALID_SOCKET) {

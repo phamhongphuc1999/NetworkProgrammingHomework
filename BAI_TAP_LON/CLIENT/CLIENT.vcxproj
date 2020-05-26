@@ -19,7 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{3687176D-67DF-4715-A79C-D63B70A437E3}</ProjectGuid>
+    <ProjectGuid>{07B953C5-F159-4683-AA6F-B00E2287EBB1}</ProjectGuid>
     <RootNamespace>CLIENT</RootNamespace>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
     <Keyword>MFCProj</Keyword>
@@ -216,9 +216,4 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
-  <ProjectExtensions>
-    <VisualStudio>
-      <UserProperties RESOURCE_FILE="CLIENT.rc" />
-    </VisualStudio>
-  </ProjectExtensions>
 </Project>

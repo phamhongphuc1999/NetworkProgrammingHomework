@@ -33,10 +33,10 @@
     <ClInclude Include="Resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="CONST.h">
+    <ClInclude Include="InteractFile.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="InteractFile.h">
+    <ClInclude Include="CONST.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

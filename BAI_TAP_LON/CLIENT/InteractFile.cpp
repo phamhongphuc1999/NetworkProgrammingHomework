@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "InteractFile.h"
 
-bool IsFileExistOrValid(string pathToFile){
+bool IsFileExistOrValid(string pathToFile) {
 	fstream file; file.open(pathToFile);
 	return file.good();
 }

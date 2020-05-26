@@ -24,6 +24,7 @@ void CSUMDlg::DoDataExchange(CDataExchange* pDX)
 	CDialogEx::DoDataExchange(pDX);
 	DDX_Control(pDX, edit_a, a);
 	DDX_Control(pDX, edit_b, b);
+	DDX_Control(pDX, edit_sum, c);
 }
 
 BEGIN_MESSAGE_MAP(CSUMDlg, CDialogEx)

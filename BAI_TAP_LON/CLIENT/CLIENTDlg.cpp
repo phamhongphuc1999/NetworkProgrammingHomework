@@ -6,12 +6,11 @@
 #include "CLIENT.h"
 #include "CLIENTDlg.h"
 #include "afxdialogex.h"
+#include "CONST.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
-
-// CCLIENTDlg dialog
 
 CCLIENTDlg::CCLIENTDlg(CWnd* pParent /*=NULL*/)
 	: CDialogEx(IDD_CLIENT_DIALOG, pParent)
@@ -27,9 +26,7 @@ void CCLIENTDlg::DoDataExchange(CDataExchange* pDX)
 BEGIN_MESSAGE_MAP(CCLIENTDlg, CDialogEx)
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
-	ON_BN_CLICKED(btn_browse, &CCLIENTDlg::OnBnClickedbrowse)
-	ON_BN_CLICKED(btn_search, &CCLIENTDlg::OnBnClickedsearch)
-	ON_BN_CLICKED(btn_forward, &CCLIENTDlg::OnBnClickedforward)
+	ON_BN_CLICKED(buttonBrowse, &CCLIENTDlg::OnBnClickedBrowse)
 END_MESSAGE_MAP()
 
 
@@ -38,20 +35,20 @@ END_MESSAGE_MAP()
 BOOL CCLIENTDlg::OnInitDialog()
 {
 	CDialogEx::OnInitDialog();
+	SetIcon(m_hIcon, TRUE);
+	SetIcon(m_hIcon, FALSE);
 
-	// Set the icon for this dialog.  The framework does this automatically
-	//  when the application's main window is not a dialog
-	SetIcon(m_hIcon, TRUE);			// Set big icon
-	SetIcon(m_hIcon, FALSE);		// Set small icon
+	this->s_file.Create(_T("File"), WS_CHILD | WS_VISIBLE | SS_CENTER, CRect(100, 110, 130, 140), this, staticFile);
+	this->s_fileName.Create(_T("File Name"), WS_CHILD | WS_VISIBLE | SS_CENTER, CRect(50, 200, 130, 230), this, staticFileName);
+	this->e_forward.Create(ES_MULTILINE | WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_BORDER, CRect(150, 105, 700, 135), this, editForward);
+	this->e_search.Create(ES_MULTILINE | WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_BORDER, CRect(150, 195, 700, 225), this, editSearch);
+	this->b_connect.Create(_T("Connect"), WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, CRect(400, 20, 500, 80), this, buttonConnect);
+	this->b_borwse.Create(_T("Browse"), WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, CRect(720, 105, 820, 135), this, buttonBrowse);
+	this->b_forward.Create(_T("Forward"), WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, CRect(840, 105, 940, 135), this, buttonForward);
+	this->b_search.Create(_T("Search"), WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, CRect(720, 195, 820, 225), this, buttonSearch);
 
-	// TODO: Add extra initialization here
-
-	return TRUE;  // return TRUE  unless you set the focus to a control
+	return TRUE;
 }
-
-// If you add a minimize button to your dialog, you will need the code below
-//  to draw the icon.  For MFC applications using the document/view model,
-//  this is automatically done for you by the framework.
 
 void CCLIENTDlg::OnPaint()
 {
@@ -78,16 +75,12 @@ void CCLIENTDlg::OnPaint()
 	}
 }
 
-// The system calls this function to obtain the cursor to display while the user drags
-//  the minimized window.
 HCURSOR CCLIENTDlg::OnQueryDragIcon()
 {
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
-//Click on btn_browse
-void CCLIENTDlg::OnBnClickedbrowse()
-{
+void CCLIENTDlg::OnBnClickedBrowse() {
 	CFileDialog l_fDlg(TRUE);
 	int iRet = l_fDlg.DoModal();
 	CString l_strFileName;
@@ -105,7 +98,7 @@ void CCLIENTDlg::OnBnClickedbrowse()
 				contentstr += _T("\n");
 			}
 			CString cPathToFile = l_fDlg.GetPathName();
-			SetDlgItemText(edit_file, cPathToFile);
+			SetDlgItemText(editForward, cPathToFile);
 			pathToFile = CW2A(cPathToFile.GetString());
 		}
 		catch (CException* e)
@@ -114,17 +107,4 @@ void CCLIENTDlg::OnBnClickedbrowse()
 			e->Delete();
 		}
 	}
-}
-
-void CCLIENTDlg::OnBnClickedsearch()
-{
-	string temp = "abc" + pathToFile;
-	CString aaa(temp.c_str(), temp.length());
-	SetDlgItemText(edit_file, aaa);
-}
-
-
-void CCLIENTDlg::OnBnClickedforward()
-{
-
 }

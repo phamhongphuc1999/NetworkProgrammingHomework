@@ -1,8 +1,8 @@
 
 // CLIENTDlg.h : header file
 //
-#include "InteractFile.h"
-
+#include <String>
+using namespace std;
 #pragma once
 
 
@@ -32,10 +32,13 @@ protected:
 	afx_msg HCURSOR OnQueryDragIcon();
 	DECLARE_MESSAGE_MAP()
 public:
-	afx_msg void OnBnClickedbrowse();
-	afx_msg void OnBnClickedsearch();
-private:
+	//controller
+	CStatic s_file, s_fileName;
+	CEdit e_forward, e_search;
+	CButton b_connect, b_borwse, b_forward, b_search;
+
 	string pathToFile;
-public:
-	afx_msg void OnBnClickedforward();
+
+	//event
+	afx_msg void OnBnClickedBrowse();
 };

@@ -1,0 +1,1 @@
+afxMessageBox(_T("HELLO!"))

@@ -34,5 +34,6 @@ protected:
 public:
 	CEdit a;
 	CEdit b;
+	CEdit c;
 	afx_msg void OnBnClickedsum();
 };

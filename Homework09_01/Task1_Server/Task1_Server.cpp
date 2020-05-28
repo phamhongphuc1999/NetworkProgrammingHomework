@@ -159,7 +159,7 @@ char* CHECK_CLIENT_LOGIN(SESSION* session, char* username, char* password) {
 			if (session->numberOfError > 3) {
 				session->type = 3;
 				session->numberOfError = 0;
-				ofstream file; file.open("D:/Documents/VisualStudio/Lap_trinh_mang/Homework04/Task1_Server/account.txt", ios::in);
+				ofstream file; file.open("D:/Documents/VisualStudio/Lap_trinh_mang/Homework09_01/Debug/account.txt", ios::in);
 				file.seekp(session->location);
 				file << "1"; file.close();
 				return new char[4]{ "113" };
@@ -194,7 +194,7 @@ int CHECK_SINGE_ACCOUNT(string line, char* username, char* password) {
 }
 
 char* LOGIN(SESSION* session, char* username, char* password) {
-	string line; ifstream file; file.open("D:/Documents/VisualStudio/Lap_trinh_mang/Homework04/Task1_Server/account.txt", ios::out);
+	string line; ifstream file; file.open("D:/Documents/VisualStudio/Lap_trinh_mang/Homework09_01/Debug/account.txt", ios::out);
 	int check = 1, index = 0;
 	while (!file.eof()) {
 		getline(file, line);
@@ -259,6 +259,16 @@ int CheckDataFromClient(char* buff) {
 #pragma endregion
 
 #pragma region Overlapped
+void InitializeSocketInfomation(LPSOCKET_INFORMATION client) {
+	client->sockfd = acceptSocket;
+	ZeroMemory(&(client->overlapped), sizeof(WSAOVERLAPPED));
+	client->sentBytes = 0;
+	client->recvBytes = 0;
+	client->dataBuff.len = DATA_BUFSIZE;
+	client->dataBuff.buf = client->buff;
+	client->operation = RECEIVE;
+}
+
 void CALLBACK WorkerRoutine(DWORD error, DWORD transferredBytes, LPWSAOVERLAPPED overlapped, DWORD inFlags) {
 	DWORD sendBytes, recvBytes;
 	DWORD flags;
@@ -328,7 +338,7 @@ unsigned _stdcall WorkerThread(LPVOID lpParameter) {
 			printf("WSAWaitForMultipleEvents() failed with error %d\n", WSAGetLastError());
 			return 1;
 		}
-		if (index != WAIT_IO_COMPLETION) break;
+		if (index == WAIT_IO_COMPLETION) continue;
 
 		WSAResetEvent(events[index - WSA_WAIT_EVENT_0]);
 		EnterCriticalSection(&criticalSection);
@@ -342,13 +352,7 @@ unsigned _stdcall WorkerThread(LPVOID lpParameter) {
 			return 1;
 		}
 
-		clients[nClients]->sockfd = acceptSocket;
-		ZeroMemory(&(clients[nClients]->overlapped), sizeof(WSAOVERLAPPED));
-		clients[nClients]->sentBytes = 0;
-		clients[nClients]->recvBytes = 0;
-		clients[nClients]->dataBuff.len = DATA_BUFSIZE;
-		clients[nClients]->dataBuff.buf = clients[nClients]->buff;
-		clients[nClients]->operation = RECEIVE;
+		InitializeSocketInfomation(clients[nClients]);
 		flags = 0;
 
 		if (WSARecv(clients[nClients]->sockfd, &(clients[nClients]->dataBuff), 1, &recvBytes,

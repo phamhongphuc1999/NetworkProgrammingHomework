@@ -9,6 +9,7 @@
 #include <winsock2.h>
 #include <WS2tcpip.h>
 #include <SDKDDKVer.h>
+#include <windows.h>
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -20,25 +21,11 @@
 using namespace std;
 
 #pragma comment(lib, "Ws2_32.lib")
-/*
-  001: data type is incorrect
-
-  100: Login successful
-  101: already logined
-  110: username is incorrect
-  111: password is incorrect
-  112: account is locked
-  113: The account has just been locked because of incorrect login three times
-
-  200: logout successful
-  210: not logged in, so cannot log out
-  211: Not logged out because the username is incorrect
-*/
 
 #pragma region COMMON
 /*  type: 0 - already logined, 1 - not logined, 2 - account is locked
-	location: location of line in the file
-	numberOfError: number of incorrect password attempts
+location: location of line in the file
+numberOfError: number of incorrect password attempts
 */
 struct Account
 {
@@ -48,9 +35,6 @@ struct Account
 	int type;
 	int location;
 };
-
-//list of accounts taken from file
-vector<string> listAccount;
 
 void Slip(char* input, char* username, char* password) {
 	int index = 0, count = 0;
@@ -78,33 +62,6 @@ void Slip(string input, char* username, char* password) {
 		count++;
 	}
 	password[count] = 0;
-}
-
-vector<string> CreateListAccount() {
-	ifstream file; file.open("account.txt");
-	vector<string> result;
-	string line;
-	while (!file.eof()) {
-		getline(file, line);
-		result.push_back(line);
-	}
-	file.close();
-	return result;
-}
-
-int UpdateFile() {
-	try {
-		ofstream file; file.open("account.txt");
-		int length = listAccount.size();
-		for (int i = 0; i < length; i++) {
-			file << listAccount[i] << endl;
-		}
-		file.close();
-		return 0;
-	}
-	catch(exception) {
-		return 1;
-	}
 }
 #pragma endregion
 
@@ -182,8 +139,9 @@ char* CHECK_CLIENT_LOGIN(Account* account, char* username, char* password) {
 			if (account->numberOfError > 3) {
 				account->type = 3;
 				account->numberOfError = 0;
-				int length = listAccount[account->location].length();
-				listAccount[account->location][length - 1] = '1';
+				ofstream file; file.open("D:/Documents/VisualStudio/Lap_trinh_mang/Homework04/Task1_Server/account.txt", ios::in);
+				file.seekp(account->location);
+				file << "1"; file.close();
 				return new char[4]{ "113" };
 			}
 			else return new char[4]{ "111" };
@@ -216,12 +174,13 @@ int CHECK_SINGE_ACCOUNT(string line, char* username, char* password) {
 }
 
 char* LOGIN(Account* account, char* username, char* password) {
-	string line;
-	int check = 1, length = listAccount.size(), index = 0;
-	for (int i = 0; i < length; i++) {
-		line = listAccount[i]; index = i;
+	string line; ifstream file; file.open("D:/Documents/VisualStudio/Lap_trinh_mang/Homework04/Task1_Server/account.txt", ios::out);
+	int check = 1, index = 0;
+	while (!file.eof()) {
+		getline(file, line);
 		check = CHECK_SINGE_ACCOUNT(line, username, password);
-		if (check != 1) break;
+		if (check != 1) { file.close(); break; }
+		index += line.length() + 2;
 	}
 	if (check == 1) return new char[4]{ "110" };
 	else {
@@ -279,7 +238,6 @@ int CheckDataFromClient(char* buff) {
 }
 #pragma endregion
 
-
 int main() {
 	WSADATA wsaData;
 	WORD version = MAKEWORD(2, 2);
@@ -309,15 +267,7 @@ node1:
 	sockaddr_in clientAddr;
 	char buff[BUFF_SIZE], buffSend[BUFF_SIZE];
 	int ret, clientAddrLen = sizeof(clientAddr);
-node2:
-	try {
-		listAccount.clear();
-		listAccount = CreateListAccount();
-	}
-	catch (exception) {
-		printf("can not read file\n");
-		goto node1;
-	}
+
 	SOCKET connSock = accept(listenSocket, (sockaddr*)&clientAddr, &clientAddrLen);
 	Account account; account.username = new char[BUFF_SIZE];
 	account.password = new char[BUFF_SIZE];
@@ -331,18 +281,16 @@ node2:
 			if (account.type == 0) {
 				printf("The username: %s has not logged out, will perform automatic logout\n", account.username);
 			}
-			UpdateFile();
 			closesocket(connSock);
-			goto node2;
+			break;
 		}
 		else if (ret == 0) {
 			printf("client close connection\n");
 			if (account.type == 0) {
 				printf("The username: %s has not logged out, will perform automatic logout\n", account.username);
 			}
-			UpdateFile(); //update file
-			closesocket(connSock); 
-			goto node2;
+			closesocket(connSock);
+			break;
 		}
 		else if (ret > 0) {
 			buff[ret] = 0;
@@ -365,6 +313,7 @@ node2:
 					result = LOGOUT(&account, &buff[1]);
 				}
 
+				printf("%s\n", result);
 				int ret = SEND_TCP(connSock, AddHeader(buffSend, result), 0);
 				if (ret == SOCKET_ERROR) printf("can not send message\n");
 			}

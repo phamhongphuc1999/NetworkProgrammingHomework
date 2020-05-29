@@ -36,6 +36,7 @@ typedef struct _SOCKET_INFORMATION {
 	DWORD sentBytes;
 	DWORD recvBytes;
 	DWORD operation;
+	bool first;
 } SOCKET_INFORMATION, *LPSOCKET_INFORMATION;
 
 SOCKET acceptSocket;
@@ -267,16 +268,17 @@ void InitializeSocketInfomation(LPSOCKET_INFORMATION client) {
 	client->dataBuff.len = DATA_BUFSIZE;
 	client->dataBuff.buf = client->buff;
 	client->operation = RECEIVE;
+	client->first = true;
 }
 
 void CALLBACK WorkerRoutine(DWORD error, DWORD transferredBytes, LPWSAOVERLAPPED overlapped, DWORD inFlags) {
-	DWORD sendBytes, recvBytes;
-	DWORD flags;
+	DWORD sendBytes, recvBytes, flags;
 	LPSOCKET_INFORMATION sockInfo = (LPSOCKET_INFORMATION)overlapped;
+	sockInfo->dataBuff.buf[transferredBytes] = 0;
+	printf("%s---\n", sockInfo->dataBuff.buf);
 	if (error != 0) printf("I/O operation failed with error %d\n", error);
 	if (transferredBytes == 0) printf("Closing socket %d\n\n", sockInfo->sockfd);
 	if (error != 0 || transferredBytes == 0) {
-		//Find and remove socket
 		EnterCriticalSection(&criticalSection);
 		int index;
 		for (index = 0; index < nClients; index++)
@@ -286,8 +288,7 @@ void CALLBACK WorkerRoutine(DWORD error, DWORD transferredBytes, LPWSAOVERLAPPED
 		GlobalFree(clients[index]);
 
 		for (int i = index; i < nClients - 1; i++) clients[i] = clients[i + 1];
-		nClients--;
-		LeaveCriticalSection(&criticalSection);
+		nClients--; LeaveCriticalSection(&criticalSection);
 		return;
 	}
 	if (sockInfo->operation == RECEIVE) {
@@ -296,6 +297,8 @@ void CALLBACK WorkerRoutine(DWORD error, DWORD transferredBytes, LPWSAOVERLAPPED
 		sockInfo->operation = SEND;
 	}
 	else sockInfo->sentBytes += transferredBytes;
+
+
 	if (sockInfo->recvBytes > sockInfo->sentBytes) {
 		ZeroMemory(&(sockInfo->overlapped), sizeof(WSAOVERLAPPED));
 		sockInfo->dataBuff.buf = sockInfo->buff + sockInfo->sentBytes;
@@ -324,6 +327,8 @@ void CALLBACK WorkerRoutine(DWORD error, DWORD transferredBytes, LPWSAOVERLAPPED
 	}
 }
 
+
+
 unsigned _stdcall WorkerThread(LPVOID lpParameter) {
 	DWORD flags;
 	WSAEVENT events[1];
@@ -339,7 +344,6 @@ unsigned _stdcall WorkerThread(LPVOID lpParameter) {
 			return 1;
 		}
 		if (index == WAIT_IO_COMPLETION) continue;
-
 		WSAResetEvent(events[index - WSA_WAIT_EVENT_0]);
 		EnterCriticalSection(&criticalSection);
 		if (nClients == MAX_CLIENT) {
@@ -407,12 +411,10 @@ node1:
 		return 0;
 	}
 	printf("SERVER START\n");
-
 	if ((acceptEvent = WSACreateEvent()) == WSA_INVALID_EVENT) {
 		printf("WSACreateEvent() failed with error %d\n", WSAGetLastError());
 		return 1;
 	}
-
 	_beginthreadex(0, 0, WorkerThread, (LPVOID)acceptEvent, 0, 0);
 
 	while (TRUE) {
@@ -420,7 +422,6 @@ node1:
 			printf("accept() failed with error %d\n", WSAGetLastError());
 			return 1;
 		}
-
 		if (WSASetEvent(acceptEvent) == FALSE) {
 			printf("WSASetEvent() failed with error %d\n", WSAGetLastError());
 			return 1;

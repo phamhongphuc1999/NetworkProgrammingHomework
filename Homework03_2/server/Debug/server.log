@@ -1,7 +1,0 @@
-﻿  stdafx.cpp
-  server.cpp
-d:\documents\visualstudio\lap-trinh-mang\homework_3.5\server\server.cpp(134): warning C4477: 'scanf_s' : format string '%d' requires an argument of type 'int *', but variadic argument 1 has type 'u_short *'
-  d:\documents\visualstudio\lap-trinh-mang\homework_3.5\server\server.cpp(134): note: consider using '%hd' in the format string
-d:\documents\visualstudio\lap-trinh-mang\homework_3.5\server\server.cpp(151): warning C4101: 'buffSend': unreferenced local variable
-  server.vcxproj -> D:\Documents\VisualStudio\lap-trinh-mang\Homework_3.5\Debug\server.exe
-  server.vcxproj -> D:\Documents\VisualStudio\lap-trinh-mang\Homework_3.5\Debug\server.pdb (Full PDB)

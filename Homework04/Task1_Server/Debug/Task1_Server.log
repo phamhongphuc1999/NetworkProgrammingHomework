@@ -1,9 +1,0 @@
-﻿  stdafx.cpp
-  Task1_Server.cpp
-d:\documents\visualstudio\lap_trinh_mang\homework04\task1_server\task1_server.cpp(132): warning C4800: 'int': forcing value to bool 'true' or 'false' (performance warning)
-d:\documents\visualstudio\lap_trinh_mang\homework04\task1_server\task1_server.cpp(133): warning C4800: 'int': forcing value to bool 'true' or 'false' (performance warning)
-d:\documents\visualstudio\lap_trinh_mang\homework04\task1_server\task1_server.cpp(252): warning C4477: 'scanf_s' : format string '%d' requires an argument of type 'int *', but variadic argument 1 has type 'u_short *'
-  d:\documents\visualstudio\lap_trinh_mang\homework04\task1_server\task1_server.cpp(252): note: consider using '%hd' in the format string
-d:\documents\visualstudio\lap_trinh_mang\homework04\task1_server\task1_server.cpp(207): warning C4715: 'LOGIN': not all control paths return a value
-  Task1_Server.vcxproj -> D:\Documents\VisualStudio\Lap_trinh_mang\Homework04\Debug\Task1_Server.exe
-  Task1_Server.vcxproj -> D:\Documents\VisualStudio\Lap_trinh_mang\Homework04\Debug\Task1_Server.pdb (Full PDB)

@@ -33,7 +33,7 @@ struct NewFile
 	string file_name;
 };
 
-struct ENCRYPTION_FILE 
+struct ENCRYPTION_FILE
 {
 	string path;
 	int key;

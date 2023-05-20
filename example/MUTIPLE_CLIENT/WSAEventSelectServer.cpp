@@ -20,14 +20,14 @@ int _tmain(int argc, _TCHAR* argv[])
 	SOCKET		socks[WSA_MAXIMUM_WAIT_EVENTS];
 	WSAEVENT	events[WSA_MAXIMUM_WAIT_EVENTS];
 	WSANETWORKEVENTS sockEvent;
-	
+
 	//Step 1: Initiate WinSock
 	WSADATA wsaData;
 	WORD wVersion = MAKEWORD(2, 2);
 	if (WSAStartup(wVersion, &wsaData))
 		printf("Version is not supported\n");
 
-	//Step 2: Construct LISTEN socket	
+	//Step 2: Construct LISTEN socket
 	SOCKET listenSock;
 	listenSock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 
@@ -42,9 +42,9 @@ int _tmain(int argc, _TCHAR* argv[])
 	nEvents++;
 
 	// Associate event types FD_ACCEPT and FD_CLOSE
-	// with the listening socket and newEvent   
+	// with the listening socket and newEvent
 	WSAEventSelect(socks[0], events[0], FD_ACCEPT | FD_CLOSE);
-	
+
 
 	if (bind(listenSock, (sockaddr *)&serverAddr, sizeof(serverAddr)))
 	{
@@ -52,7 +52,7 @@ int _tmain(int argc, _TCHAR* argv[])
 		_getch();
 		return 0;
 	}
-		
+
 	//Step 4: Listen request from client
 	if (listen(listenSock, 10)) {
 		printf("Error! Cannot listen.");
@@ -67,7 +67,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	sockaddr_in clientAddr;
 	int clientAddrLen = sizeof(clientAddr);
 	int ret, i;
-	
+
 	for (i = 1; i < WSA_MAXIMUM_WAIT_EVENTS; i++) {
 		socks[i] = 0;
 	}
@@ -108,7 +108,7 @@ int _tmain(int argc, _TCHAR* argv[])
 						nEvents++;
 						break;
 					}
-			
+
 			//reset event
 			WSAResetEvent(events[index]);
 		}

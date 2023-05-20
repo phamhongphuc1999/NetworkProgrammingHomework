@@ -157,7 +157,7 @@ int ReverseLookup(SOCKADDR *sa, int salen, char *buf, int buflen)
     char    host[NI_MAXHOST];
     int     hostlen=NI_MAXHOST,
             rc;
-    
+
     rc = getnameinfo(
             sa,
             salen,

@@ -4,7 +4,7 @@
 #include "stdafx.h"
 #include <winsock2.h>
 #include <windows.h>
-#include <stdio.h> 
+#include <stdio.h>
 #pragma comment(lib, "Ws2_32.lib")
 
 #define PORT 5500
@@ -20,16 +20,16 @@ int operation;
 void CALLBACK workerRoutine(DWORD error, DWORD transferredBytes, LPWSAOVERLAPPED lpOverlapped, DWORD inFlags);
 
 int _tmain(int argc, _TCHAR* argv[])
-{	
+{
 	DWORD flags, recvBytes, index;
-	
+
 	WSADATA wsaData;
 	SOCKADDR_IN serverAddr, clientAddr;
 	int clientAddrLen = sizeof(clientAddr);
 	WSAEVENT events[1];
 	SOCKET listenSocket;
 	WSAOVERLAPPED overlapped;
-	
+
 	// Step 1: Start Winsock, and set up a listening socket
 	if (WSAStartup((2,2),&wsaData)){
 		printf("WSAStartup() failed with error %d\n", WSAGetLastError());
@@ -53,7 +53,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	if (listen(listenSocket, 5)){
 		printf("listen() failed with error %d\n", WSAGetLastError());
 		return 1;
-	}	
+	}
 
 	printf("Server started!");
 
@@ -67,7 +67,7 @@ int _tmain(int argc, _TCHAR* argv[])
 		printf("accept() failed with error %d\n", WSAGetLastError());
 		return 1;
 	}
-	
+
 	//Step 3: Set up an overlapped structure
 	ZeroMemory(&overlapped, sizeof(WSAOVERLAPPED));
 	operation = RECEIVE;
@@ -113,7 +113,7 @@ void CALLBACK workerRoutine(DWORD error, DWORD transferredBytes, LPWSAOVERLAPPED
         closesocket(acceptSocket);
         return;
     }
-	
+
 	// Check to see if the operation field equals RECEIVE. If this is so, then
 	// this means a WSARecv call just completed
 	if (operation == RECEIVE) {
@@ -123,7 +123,7 @@ void CALLBACK workerRoutine(DWORD error, DWORD transferredBytes, LPWSAOVERLAPPED
 	}
 	else
 		sentBytes += transferredBytes;
-	
+
 	// Since WSASend() is not guaranteed to send all of the bytes requested,
 	// continue posting WSASend() calls until all received bytes are sent.
 	if (recvBytes > sentBytes) {
@@ -157,6 +157,5 @@ void CALLBACK workerRoutine(DWORD error, DWORD transferredBytes, LPWSAOVERLAPPED
 			}
 		}
 	}
-	
-}
 
+}

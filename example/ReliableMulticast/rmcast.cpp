@@ -244,8 +244,8 @@ int SetSendInterface(SOCKET s, struct addrinfo *iface)
 
     // Set the send interface
     rc = setsockopt(
-            s, 
-            IPPROTO_RM, 
+            s,
+            IPPROTO_RM,
             RM_SET_SEND_IF,
             (char *)&((SOCKADDR_IN *)iface->ai_addr)->sin_addr.s_addr,
             sizeof(ULONG)
@@ -267,7 +267,7 @@ int SetSendInterface(SOCKET s, struct addrinfo *iface)
 // Function: AddReceiveInterface
 //
 // Description:
-//    This routine adds the given interface to the receiving interfac 
+//    This routine adds the given interface to the receiving interfac
 //    list. This option is valid only for receivers.
 //
 int AddReceiveInterface(SOCKET s, struct addrinfo *iface)
@@ -307,9 +307,9 @@ int SetMulticastTtl(SOCKET s, int af, int ttl)
     // Set the TTL value
     rc = setsockopt(
             s,
-            IPPROTO_RM, 
+            IPPROTO_RM,
             RM_SET_MCAST_TTL,
-            (char *)&ttl, 
+            (char *)&ttl,
             sizeof(ttl)
             );
     if (rc == SOCKET_ERROR)
@@ -372,7 +372,7 @@ int SetFecParameters(SOCKET s, int blocksize, int groupsize, int ondemand, int p
 //     This routine sets the window size for the sending socket which includes
 //     the byte rate, window size, and window time parameters. Before setting
 //     the parameters a simple calculation is performed to determine whether
-//     the values passed in make sense. If they don't an error message is 
+//     the values passed in make sense. If they don't an error message is
 //     displayed but the set is attempted anyway. If the values don't jive
 //     then the option will fail with WSAEINVAL and the default window
 //     rate, size, and time are used instead.
@@ -420,7 +420,7 @@ int SetWindowSize(SOCKET s, int windowsize, int windowtime, int windowrate)
 //
 // Description:
 //    This option sets the latejoin value. This specifies the percentage of the
-//    window that a receiver can NAK in the event the receiver picked up the 
+//    window that a receiver can NAK in the event the receiver picked up the
 //    session in the middle of the sender's transmission. This option is set
 //    on the sender side and is advertised to the receivers when the session
 //    is joined.
@@ -449,14 +449,14 @@ int SetLateJoin(SOCKET s, int latejoin)
 
 //
 // Function: main
-// 
+//
 // Description:
-//    Parse the command line arguments, load the Winsock library, 
+//    Parse the command line arguments, load the Winsock library,
 //    create a socket and join the multicast group. If set as a
 //    sender then begin sending messages to the multicast group;
-//    otherwise, call recvfrom() to read messages send to the 
+//    otherwise, call recvfrom() to read messages send to the
 //    group.
-//    
+//
 int _cdecl main(int argc, char **argv)
 {
     WSADATA             wsd;
@@ -491,7 +491,7 @@ int _cdecl main(int argc, char **argv)
         return -1;
     }
 
-    // 
+    //
     // Create the socket. In Winsock 1 you don't need any special
     // flags to indicate multicasting.
     //
@@ -549,7 +549,7 @@ int _cdecl main(int argc, char **argv)
                 return -1;
             }
         }
-        
+
         // If specified set the late joiner option
         if (gLateJoin != -1)
         {
@@ -582,8 +582,8 @@ int _cdecl main(int argc, char **argv)
         for(i=0; i < gCount ; i++)
         {
             rc = send(
-                    s, 
-                    buf, 
+                    s,
+                    buf,
                     gBufferSize,
                     0
                     );
@@ -658,7 +658,7 @@ int _cdecl main(int argc, char **argv)
                 }
                 break;
             }
-            else 
+            else
             {
                 printf("received %d bytes\n", rc);
             }

@@ -152,7 +152,7 @@ moc1:
 	}
 	char buff[BUFF_SIZE], dest[BUFF_SIZE];
 	while (true) {
-		fflush(stdin); 
+		fflush(stdin);
 		printf("IP or domain name: ");
 		gets_s(buff);
 		int ret = SEND_TCP(client, AddHeader(dest, buff), 0);

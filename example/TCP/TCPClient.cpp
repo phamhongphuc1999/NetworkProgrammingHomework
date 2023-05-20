@@ -22,7 +22,7 @@ int _tmain(int argc, char* argv[])
 	if(WSAStartup(wVersion, &wsaData))
 		printf("Version is not supported\n");
 
-	//Step 2: Construct socket	
+	//Step 2: Construct socket
 	SOCKET client;
 	client = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 
@@ -31,7 +31,7 @@ int _tmain(int argc, char* argv[])
 	setsockopt(client, SOL_SOCKET, SO_RCVTIMEO,	(const char*)(&tv), sizeof(int));
 
 	//Step 3: Specify server address
-	sockaddr_in serverAddr;	
+	sockaddr_in serverAddr;
 	serverAddr.sin_family = AF_INET;
 	serverAddr.sin_port = htons(SERVER_PORT);
 	serverAddr.sin_addr.s_addr = inet_addr(SERVER_ADDR);
@@ -43,18 +43,18 @@ int _tmain(int argc, char* argv[])
 		return 0;
 	}
 	printf("Connected server!\n");
-	
+
 	//Step 5: Communicate with server
 	char buff[BUFF_SIZE];
 	int ret;
-	
+
 	//Send message
 	printf("Send to server: ");
 	gets_s(buff,BUFF_SIZE);
 	ret = send(client, buff, strlen(buff), 0);
 	if(ret  == SOCKET_ERROR)
 		printf("Error! Cannot send mesage.");
-   
+
 	//Receive echo message
 	ret = recv(client, buff, BUFF_SIZE, 0);
 	if(ret  == SOCKET_ERROR){
@@ -67,15 +67,13 @@ int _tmain(int argc, char* argv[])
 		printf("Receive from server[%s:%d] %s\n",
 		inet_ntoa(serverAddr.sin_addr), ntohs(serverAddr.sin_port),buff);
 	}
-	
+
 	//Step 6: Close socket
 	closesocket(client);
-	
+
 	//Step 7: Terminate Winsock
 	WSACleanup();
-	
+
 	_getch();
 	return 0;
 }
-
-

@@ -4,7 +4,7 @@
 #include "stdafx.h"
 #include <winsock2.h>
 #include <windows.h>
-#include <stdio.h> 
+#include <stdio.h>
 #include <process.h>
 #pragma comment(lib, "Ws2_32.lib")
 
@@ -38,7 +38,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	SOCKET listenSocket;
 	SOCKADDR_IN serverAddr, clientAddr;
 	int clientAddrLen = sizeof(clientAddr);
-	INT ret;	
+	INT ret;
 	WSAEVENT acceptEvent;
 
 	InitializeCriticalSection(&criticalSection);
@@ -73,10 +73,10 @@ int _tmain(int argc, _TCHAR* argv[])
 		printf("WSACreateEvent() failed with error %d\n", WSAGetLastError());
 		return 1;
 	}
-		
-	// Create a worker thread to service completed I/O requests	
+
+	// Create a worker thread to service completed I/O requests
 	_beginthreadex(0, 0, workerThread, (LPVOID)acceptEvent, 0, 0);
-	
+
 	while(TRUE){
 		if ((acceptSocket = accept(listenSocket, (PSOCKADDR)&clientAddr, &clientAddrLen)) == SOCKET_ERROR) {
 			printf("accept() failed with error %d\n", WSAGetLastError());
@@ -97,7 +97,7 @@ unsigned __stdcall workerThread(LPVOID lpParameter)
 	WSAEVENT events[1];
 	DWORD index;
 	DWORD recvBytes;
-	
+
 	// Save the accept event in the event array
 	events[0] = (WSAEVENT) lpParameter;
 	while(TRUE)
@@ -109,13 +109,13 @@ unsigned __stdcall workerThread(LPVOID lpParameter)
 				printf("WSAWaitForMultipleEvents() failed with error %d\n", WSAGetLastError());
 				return 1;
 			}
-			
+
 			if (index != WAIT_IO_COMPLETION){
 				// An accept() call event is ready - break the wait loop
 				break;
 			}
 		}
-		
+
 		WSAResetEvent(events[index - WSA_WAIT_EVENT_0]);
 
 		EnterCriticalSection(&criticalSection);
@@ -131,7 +131,7 @@ unsigned __stdcall workerThread(LPVOID lpParameter)
 			printf("GlobalAlloc() failed with error %d\n", GetLastError());
 			return 1;
 		}
-		
+
 		// Fill in the details of our accepted socket
 		clients[nClients]->sockfd = acceptSocket;
 		ZeroMemory(&(clients[nClients]->overlapped), sizeof(WSAOVERLAPPED));
@@ -149,7 +149,7 @@ unsigned __stdcall workerThread(LPVOID lpParameter)
 				return 1;
 			}
 		}
-		
+
 		printf("Socket %d got connected...\n", acceptSocket);
 		nClients++;
 		LeaveCriticalSection(&criticalSection);
@@ -162,16 +162,16 @@ void CALLBACK workerRoutine(DWORD error, DWORD transferredBytes, LPWSAOVERLAPPED
 {
 	DWORD sendBytes, recvBytes;
 	DWORD flags;
-	
+
 	// Reference the WSAOVERLAPPED structure as a SOCKET_INFORMATION structure
 	LPSOCKET_INFORMATION sockInfo = (LPSOCKET_INFORMATION) overlapped;
 
 	if (error != 0)
 		printf("I/O operation failed with error %d\n", error);
-	
+
 	if (transferredBytes == 0)
 		printf("Closing socket %d\n\n", sockInfo->sockfd);
-	
+
 	if (error != 0 || transferredBytes == 0){
 		//Find and remove socket
 		EnterCriticalSection(&criticalSection);
@@ -189,13 +189,13 @@ void CALLBACK workerRoutine(DWORD error, DWORD transferredBytes, LPWSAOVERLAPPED
 		nClients--;
 
 		LeaveCriticalSection(&criticalSection);
-		
+
 		return;
 	}
-	
+
 	// Check to see if the recvBytes field equals zero. If this is so, then
 	// this means a WSARecv call just completed so update the recvBytes field
-	// with the transferredBytes value from the completed WSARecv() call	
+	// with the transferredBytes value from the completed WSARecv() call
 	if (sockInfo->operation == RECEIVE){
 		sockInfo->recvBytes = transferredBytes;
 		sockInfo->sentBytes = 0;
@@ -204,7 +204,7 @@ void CALLBACK workerRoutine(DWORD error, DWORD transferredBytes, LPWSAOVERLAPPED
 	else{
 		sockInfo->sentBytes += transferredBytes;
 	}
-	
+
 	if (sockInfo->recvBytes > sockInfo->sentBytes){
 		// Post another WSASend() request.
 		// Since WSASend() is not guaranteed to send all of the bytes requested,
@@ -222,7 +222,7 @@ void CALLBACK workerRoutine(DWORD error, DWORD transferredBytes, LPWSAOVERLAPPED
 	}
 	else{
 		// Now that there are no more bytes to send post another WSARecv() request
-		sockInfo->recvBytes = 0;		
+		sockInfo->recvBytes = 0;
 		flags = 0;
 		ZeroMemory(&(sockInfo->overlapped), sizeof(WSAOVERLAPPED));
 		sockInfo->dataBuff.len = DATA_BUFSIZE;

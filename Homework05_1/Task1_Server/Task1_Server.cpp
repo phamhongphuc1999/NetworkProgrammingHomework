@@ -341,7 +341,7 @@ unsigned _stdcall Handler(void* param) {
 	session.account.username = new char[BUFF_SIZE];
 	session.account.password = new char[BUFF_SIZE];
 	session.account.numberOfError = 0;
-	session.account.type = 1; 
+	session.account.type = 1;
 	session.account.location = -1;
 	PARAM temp;
 	temp.username = new char[BUFF_SIZE];

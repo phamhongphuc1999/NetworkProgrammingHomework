@@ -273,7 +273,7 @@ moc1:
 	char* temp = new char[BUFF_SIZE];
 	char* serverAddrIpv4 = new char[BUFF_SIZE];
 	u_short serverPort = 0;
-	fflush(stdin); 
+	fflush(stdin);
 	printf("%s: ", CLIENT_EXE);
 	gets_s(temp, BUFF_SIZE);
 	if (!CheckConnect(temp, &serverPort, serverAddrIpv4)) {

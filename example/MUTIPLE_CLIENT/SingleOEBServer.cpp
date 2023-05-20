@@ -52,7 +52,7 @@ int _tmain(int argc, _TCHAR* argv[])
 		printf("listen() failed with error %d\n", WSAGetLastError());
 		return 1;
 	}
-	
+
 	printf("Server start!");
 
 	/*********************************ADDITIONAL CODE***************************************/
@@ -112,8 +112,8 @@ int _tmain(int argc, _TCHAR* argv[])
 
 		// Step 6: Determine the status of the overlapped request
 		WSAGetOverlappedResult(connSocket, &acceptOverlapped, &transferredBytes, FALSE, &flags);
-		
-		// Step 7: Reset the signaled event		
+
+		// Step 7: Reset the signaled event
 		WSAResetEvent(events[index]);
 
 		// First check to see whether the peer has closed
@@ -138,7 +138,7 @@ int _tmain(int argc, _TCHAR* argv[])
 		// Step 8: Post another I/O operation
 		// Since WSASend() is not guaranteed to send all of the bytes requested,
 		// continue posting WSASend() calls until all received bytes are sent.
-		if(recvBytes > sentBytes){	
+		if(recvBytes > sentBytes){
 			dataBuf.buf = buffer + sentBytes;
 			dataBuf.len = recvBytes - sentBytes;
 			operation = SEND;
@@ -149,7 +149,7 @@ int _tmain(int argc, _TCHAR* argv[])
 					return 1;
 				}
 			}
-			
+
 		}
 		else{
 			// No more bytes to send post another WSARecv() request
@@ -160,7 +160,7 @@ int _tmain(int argc, _TCHAR* argv[])
 			dataBuf.len = DATA_BUFSIZE;
 			dataBuf.buf = buffer;
 			flags = 0;
-			
+
 			if (WSARecv(connSocket, &dataBuf, 1, &transferredBytes, &flags, &acceptOverlapped, NULL) == SOCKET_ERROR){
 				if (WSAGetLastError() != WSA_IO_PENDING){
 					printf("WSARecv() failed with error %d\n", WSAGetLastError());

@@ -335,7 +335,7 @@ unsigned _stdcall Handler(void* param) {
 				if (ret <= 0) {
 					if (ret == SOCKET_ERROR) printf("Connection shutdown\n");
 					else if (ret == 0) printf("Client close connection\n");
-					
+
 					HANDLE hRelease = (HANDLE)_beginthreadex(0, 0, ReleaseSession, (void*)&client[i], 0, 0);
 					WaitForSingleObject(hRelease, INFINITE);
 					continue;

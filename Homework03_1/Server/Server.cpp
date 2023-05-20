@@ -118,7 +118,7 @@ moc1:
 	sockaddr_in clientAddr;
 	char buff[BUFF_SIZE], buffSend[BUFF_SIZE];
 	int ret, clientAddrLen = sizeof(clientAddr);
-moc2:	
+moc2:
 	SOCKET connSock = accept(listenSocket, (sockaddr*)&clientAddr, &clientAddrLen);
 	while (true) {
 		ret = RECEIVE_TCP(connSock, buff, 0);

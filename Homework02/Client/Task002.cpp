@@ -123,12 +123,12 @@ int _tmain(int argc, _TCHAR* argv[])
 	serverAddr.sin_port = htons(1000);
 	serverAddr.sin_addr.s_addr = inet_addr(SERVER_ADDR);
 	char* temp = new char[BUFF_SIZE];
-	
+
 	printf("press empty string to close window\n");
 	while (true) {
 		moc1:
 		char* buff = new char[BUFF_SIZE];
-		
+
 		printf("%s ", CLIENT_EXE);
 		gets_s(temp, BUFF_SIZE);
 		check = CheckInput(temp, &serverPort, buff);

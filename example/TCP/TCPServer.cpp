@@ -18,12 +18,12 @@ int _tmain(int argc, _TCHAR* argv[])
 	if(WSAStartup(wVersion, &wsaData))
 		printf("Version is not supported\n");
 
-	//Step 2: Construct socket	
+	//Step 2: Construct socket
 	SOCKET listenSock;
 	listenSock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 
 	//Step 3: Bind address to socket
-	sockaddr_in serverAddr;	
+	sockaddr_in serverAddr;
 	serverAddr.sin_family = AF_INET;
 	serverAddr.sin_port = htons(SERVER_PORT);
 	serverAddr.sin_addr.s_addr = inet_addr(SERVER_ADDR);
@@ -34,7 +34,7 @@ int _tmain(int argc, _TCHAR* argv[])
 		_getch();
 		return 0;
 	}
-	
+
 	//Step 4: Listen request from client
 	if(listen(listenSock, 10)){
 		printf("Error! Cannot listen.");
@@ -65,7 +65,7 @@ int _tmain(int argc, _TCHAR* argv[])
 			buff[ret] = 0;
    			printf("Receive from client[%s:%d] %s\n",
 			inet_ntoa(clientAddr.sin_addr), ntohs(clientAddr.sin_port),buff);
-				
+
 			//Echo to client
    			ret = send(connSock, buff, strlen(buff), 0);
    			if(ret  == SOCKET_ERROR)
@@ -76,11 +76,9 @@ int _tmain(int argc, _TCHAR* argv[])
 
 	//Step 5: Close socket
 	closesocket(listenSock);
-	
+
 	//Step 6: Terminate Winsock
 	WSACleanup();
 
 	return 0;
 }
-
-

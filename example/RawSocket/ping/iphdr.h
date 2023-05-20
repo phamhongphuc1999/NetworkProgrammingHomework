@@ -1,9 +1,9 @@
 //
 // Sample: Protocol header definitions used by ping (raw sockets)
-// 
+//
 // Files:
 //      iphdr.h     - this file
-//      
+//
 // Description:
 //      This file contains various protocol header definitions used by
 //      the raw socket ping sample.
@@ -25,7 +25,7 @@ typedef struct ip_hdr
                                      // 4-bit header length (in 32-bit words)
     unsigned char  ip_tos;           // IP type of service
     unsigned short ip_totallength;   // Total length
-    unsigned short ip_id;            // Unique identifier 
+    unsigned short ip_id;            // Unique identifier
     unsigned short ip_offset;        // Fragment offset field
     unsigned char  ip_ttl;           // Time to live
     unsigned char  ip_protocol;      // Protocol(TCP,UDP etc)
@@ -62,7 +62,7 @@ typedef struct ipv6_hdr
                                            // 20-bit flow label
     unsigned short  ipv6_payloadlen;       // payload length
     unsigned char   ipv6_nexthdr;          // next header protocol value
-    unsigned char   ipv6_hoplimit;         // TTL 
+    unsigned char   ipv6_hoplimit;         // TTL
     struct in6_addr ipv6_srcaddr;          // Source address
     struct in6_addr ipv6_destaddr;         // Destination address
 } IPV6_HDR, *PIPV6_HDR, FAR * LPIPV6_HDR;
@@ -90,7 +90,7 @@ typedef struct icmpv6_echo_request
     unsigned short  icmp6_echo_sequence;
 } ICMPV6_ECHO_REQUEST;
 
-// Define the UDP header 
+// Define the UDP header
 typedef struct udp_hdr
 {
     unsigned short src_portno;       // Source port no.

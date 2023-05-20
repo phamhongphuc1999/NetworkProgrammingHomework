@@ -29,7 +29,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	//Registering the Window Class
 	MyRegisterClass(hInstance);
-	
+
 	//Create the window
 	if ((serverWindow = InitInstance (hInstance, nCmdShow))==NULL)
 		return FALSE;
@@ -42,14 +42,14 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		return 0;
 	}
 
-	//Construct socket	
+	//Construct socket
 	listenSock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-	
+
 	//requests Windows message-based notification of network events for listenSock
 	WSAAsyncSelect(listenSock, serverWindow, WM_SOCKET, FD_ACCEPT | FD_CLOSE | FD_READ);
 
 	//Bind address to socket
-	sockaddr_in serverAddr;	
+	sockaddr_in serverAddr;
 	serverAddr.sin_family = AF_INET;
 	serverAddr.sin_port = htons(SERVER_PORT);
 	serverAddr.sin_addr.s_addr = htonl(INADDR_ANY);
@@ -58,13 +58,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	{
 		MessageBox(serverWindow, L"Cannot bind!", L"Error!", MB_OK);
 	}
-	
+
 	//Listen request from client
 	if(listen(listenSock, MAX_CLIENT)){
 		MessageBox(serverWindow, L"Cannot listen!", L"Error!", MB_OK);
 		return 0;
 	}
-	
+
 	// Main message loop:
 	while (GetMessage(&msg, NULL, 0, 0)){
 			TranslateMessage(&msg);
@@ -148,7 +148,7 @@ HWND InitInstance(HINSTANCE hInstance, int nCmdShow)
 //
 
 LRESULT CALLBACK windowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
-{	
+{
 	SOCKET connSock;
 	sockaddr_in clientAddr;
 	int ret, clientAddrLen = sizeof(clientAddr), i;
@@ -156,7 +156,7 @@ LRESULT CALLBACK windowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 
 	switch(message){
 		case WM_SOCKET:
-		{	
+		{
 			if (WSAGETSELECTERROR(lParam)){
 				for(i = 0; i < MAX_CLIENT; i++)
 					if(client[i] == (SOCKET) wParam){
@@ -186,11 +186,11 @@ LRESULT CALLBACK windowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 				break;
 
 				case FD_READ:
-				{	
+				{
 					for(i = 0; i < MAX_CLIENT; i++)
 						if(client[i] == (SOCKET) wParam)
 							break;
-	
+
 					ret = recv(client[i], rcvBuff, BUFF_SIZE, 0);
 					if(ret > 0){
 						//echo to client
@@ -221,9 +221,9 @@ LRESULT CALLBACK windowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 			closesocket(listenSock);
 			WSACleanup();
 			return 0;
-		}		
+		}
 		break;
-		
+
 		case WM_CLOSE:
 		{
 			DestroyWindow(hWnd);
@@ -234,5 +234,5 @@ LRESULT CALLBACK windowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 		}
 		break;
 	}
-	return DefWindowProc(hWnd, message, wParam, lParam);	
+	return DefWindowProc(hWnd, message, wParam, lParam);
 }

@@ -1,9 +1,3 @@
 test guessme 0
 admin admin123 1
 tungbt abc123 1
-
-
-
-
-
-

@@ -11,7 +11,7 @@ void DieWithError(char *errorMessage);  /* External error handling function */
 
 int _tmain(int argc, char* argv[])
 {
-	
+
 	int sock;                         /* Socket */
     struct sockaddr_in broadcastAddr; /* Broadcast address */
     char *broadcastIP;                /* IP broadcast address */
@@ -27,7 +27,7 @@ int _tmain(int argc, char* argv[])
         exit(1);
     }
 
-    broadcastIP = argv[1];            /* first arg:  broadcast IP address */ 
+    broadcastIP = argv[1];            /* first arg:  broadcast IP address */
     broadcastPort = atoi(argv[2]);    /* second arg:  broadcast port */
     sendString = argv[3];             /* third arg:  string to broadcast */
 
@@ -56,7 +56,7 @@ int _tmain(int argc, char* argv[])
     for (;;) /* Run forever */
     {
          /* Broadcast sendString in datagram to clients every 3 seconds*/
-         if (sendto(sock, sendString, sendStringLen, 0, (struct sockaddr *) 
+         if (sendto(sock, sendString, sendStringLen, 0, (struct sockaddr *)
                &broadcastAddr, sizeof(broadcastAddr)) != sendStringLen)
              DieWithError("sendto() sent a different number of bytes than expected");
 
@@ -68,4 +68,3 @@ int _tmain(int argc, char* argv[])
 void DieWithError(char *errorMessage){
 	printf(errorMessage);
 }
-

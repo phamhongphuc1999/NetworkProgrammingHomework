@@ -32,7 +32,7 @@ char *gBindAddr=NULL,           // Address to bind socket to (default is 0.0.0.0
      *gMulticast=MCASTADDRV4,   // Multicast group to join
      *gPort=MCASTPORT;          // Port number to use
 
-// 
+//
 // Function: usage
 //
 // Description:
@@ -136,11 +136,11 @@ void ValidateArgs(int argc, char **argv)
 
 //
 // Function: JoinMulticastGroup
-// 
+//
 // Description:
-//    This function joins the multicast socket on the specified multicast 
+//    This function joins the multicast socket on the specified multicast
 //    group. The structures for IPv4 and IPv6 multicast joins are slightly
-//    different which requires different handlers. For IPv6 the scope-ID 
+//    different which requires different handlers. For IPv6 the scope-ID
 //    (interface index) is specified for the local interface whereas for IPv4
 //    the actual IPv4 address of the interface is given.
 //
@@ -187,8 +187,8 @@ int JoinMulticastGroup(SOCKET s, struct addrinfo *group, struct addrinfo *iface)
     {
         // Join the group
         rc = setsockopt(
-                s, 
-                optlevel, 
+                s,
+                optlevel,
                 option,
                 optval,
                 optlen
@@ -251,8 +251,8 @@ int SetSendInterface(SOCKET s, struct addrinfo *iface)
     {
         // Set the send interface
         rc = setsockopt(
-                s, 
-                optlevel, 
+                s,
+                optlevel,
                 option,
                 optval,
                 optlen
@@ -311,10 +311,10 @@ int SetMulticastTtl(SOCKET s, int af, int ttl)
     {
         // Set the TTL value
         rc = setsockopt(
-                s, 
-                optlevel, 
+                s,
+                optlevel,
                 option,
-                optval, 
+                optval,
                 optlen
                 );
         if (rc == SOCKET_ERROR)
@@ -373,10 +373,10 @@ int SetMulticastLoopBack(SOCKET s, int af, int loopval)
     {
         // Set the multpoint loopback
         rc = setsockopt(
-                s, 
-                optlevel, 
+                s,
+                optlevel,
                 option,
-                optval, 
+                optval,
                 optlen
                 );
         if (rc == SOCKET_ERROR)
@@ -393,14 +393,14 @@ int SetMulticastLoopBack(SOCKET s, int af, int loopval)
 
 //
 // Function: main
-// 
+//
 // Description:
-//    Parse the command line arguments, load the Winsock library, 
+//    Parse the command line arguments, load the Winsock library,
 //    create a socket and join the multicast group. If set as a
 //    sender then begin sending messages to the multicast group;
-//    otherwise, call recvfrom() to read messages send to the 
+//    otherwise, call recvfrom() to read messages send to the
 //    group.
-//    
+//
 int _cdecl main(int argc, char **argv)
 {
     WSADATA             wsd;
@@ -448,7 +448,7 @@ int _cdecl main(int argc, char **argv)
                 gInterface, WSAGetLastError());
         return -1;
     }
-    // 
+    //
     // Create the socket. In Winsock 1 you don't need any special
     // flags to indicate multicasting.
     //
@@ -483,7 +483,7 @@ int _cdecl main(int argc, char **argv)
         }
     }
 
-    // Set the send (outgoing) interface 
+    // Set the send (outgoing) interface
     rc = SetSendInterface(s, resif);
     if (rc == SOCKET_ERROR)
     {
@@ -542,16 +542,16 @@ int _cdecl main(int argc, char **argv)
         {
             fromlen = sizeof(safrom);
             rc = recvfrom(
-                    s, 
-                    buf, 
-                    gBufferSize, 
+                    s,
+                    buf,
+                    gBufferSize,
                     0,
-                   (SOCKADDR *)&safrom, 
+                   (SOCKADDR *)&safrom,
                    &fromlen
                    );
             if (rc == SOCKET_ERROR)
             {
-                printf("recvfrom failed with: %d\n", 
+                printf("recvfrom failed with: %d\n",
                     WSAGetLastError());
                 break;
             }
@@ -569,8 +569,8 @@ int _cdecl main(int argc, char **argv)
         for(i=0; i < gCount ; i++)
         {
             rc = sendto(
-                    s, 
-                    buf, 
+                    s,
+                    buf,
                     gBufferSize,
                     0,
                     resmulti->ai_addr,

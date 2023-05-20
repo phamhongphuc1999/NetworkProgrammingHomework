@@ -196,7 +196,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	//End
 	closesocket(sniffer);
 	WSACleanup();
-	
+
 	_getch();
 	return 0;
 }

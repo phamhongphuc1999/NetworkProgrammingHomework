@@ -43,7 +43,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	DWORD transferredBytes;
 	DWORD flags;
 	WSADATA wsaData;
-		
+
 	if (WSAStartup((2,2), &wsaData) != 0){
 		printf("WSAStartup() failed with error %d\n", GetLastError());
 		return 1;
@@ -54,13 +54,13 @@ int _tmain(int argc, _TCHAR* argv[])
 		printf("CreateIoCompletionPort() failed with error %d\n", GetLastError());
 		return 1;
 	}
-	
+
 	// Step 2: Determine how many processors are on the system
 	GetSystemInfo(&systemInfo);
 
 	// Step 3: Create worker threads based on the number of processors available on the
-	// system. Create two worker threads for each processor	
-	for(int i = 0; i < (int)systemInfo.dwNumberOfProcessors * 2; i++){		
+	// system. Create two worker threads for each processor
+	for(int i = 0; i < (int)systemInfo.dwNumberOfProcessors * 2; i++){
 		// Create a server worker thread and pass the completion port to the thread
 		if (_beginthreadex(0, 0, serverWorkerThread, (void*)completionPort,  0, 0)== 0){
 			printf("Create thread failed with error %d\n", GetLastError());
@@ -81,25 +81,25 @@ int _tmain(int argc, _TCHAR* argv[])
 		printf("bind() failed with error %d\n", WSAGetLastError());
 		return 1;
 	}
-	
+
 	// Prepare socket for listening
 	if (listen(listenSock, 20) == SOCKET_ERROR){
 		printf("listen() failed with error %d\n", WSAGetLastError());
 		return 1;
 	}
-	
+
 	// Step 5: Accept connections
 	if ((acceptSock = WSAAccept(listenSock, NULL, NULL, NULL, 0)) == SOCKET_ERROR){
 		printf("WSAAccept() failed with error %d\n", WSAGetLastError());
 		return 1;
 	}
-	
+
 	// Step 6: Create a socket information structure to associate with the socket
 	if ((perHandleData = (LPPER_HANDLE_DATA) GlobalAlloc(GPTR, sizeof(PER_HANDLE_DATA))) == NULL){
 			printf("GlobalAlloc() failed with error %d\n", GetLastError());
 			return 1;
-	}		
-	
+	}
+
 	// Step 7: Associate the accepted socket with the original completion port
 	printf("Socket number %d got connected...\n", acceptSock);
 	perHandleData->socket = acceptSock;
@@ -107,7 +107,7 @@ int _tmain(int argc, _TCHAR* argv[])
 		printf("CreateIoCompletionPort() failed with error %d\n", GetLastError());
 		return 1;
 	}
-	
+
 	// Step 8: Create per I/O socket information structure to associate with the WSARecv call
 	if ((perIoData = (LPPER_IO_OPERATION_DATA) GlobalAlloc(GPTR, sizeof(PER_IO_OPERATION_DATA))) == NULL){
 		printf("GlobalAlloc() failed with error %d\n", GetLastError());
@@ -152,7 +152,7 @@ unsigned __stdcall serverWorkerThread(LPVOID completionPortID)
 		if (transferredBytes == 0){
 			printf("Closing socket %d\n", perHandleData->socket);
 			if (closesocket(perHandleData->socket) == SOCKET_ERROR){
-				printf("closesocket() failed with error %d\n", WSAGetLastError());				
+				printf("closesocket() failed with error %d\n", WSAGetLastError());
 				return 0;
 			}
 			GlobalFree(perHandleData);

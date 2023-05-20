@@ -17,7 +17,7 @@
 //    as a part of the data submitted to sendto, we include both
 //    the ICMP request and data.
 //
-//    For IPv4 the IP record route option is supported via the 
+//    For IPv4 the IP record route option is supported via the
 //    IP_OPTIONS socket option.
 //
 // Compile:
@@ -25,7 +25,7 @@
 //
 // Command Line Options/Parameters:
 //     ping.exe [-a 4|6] [-i ttl] [-l datasize] [-r] [host]
-//     
+//
 //     -a       Address family (IPv4 or IPv6)
 //     -i ttl   TTL value to set on socket
 //     -l size  Amount of data to send as part of the ICMP request
@@ -77,7 +77,7 @@ void usage(char *progname)
     ExitProcess(-1);
 }
 
-// 
+//
 // Function: InitIcmpHeader
 //
 // Description:
@@ -95,7 +95,7 @@ void InitIcmpHeader(char *buf, int datasize)
     icmp_hdr->icmp_checksum = 0;
     icmp_hdr->icmp_sequence = 0;
     icmp_hdr->icmp_timestamp= GetTickCount();
-  
+
     datapart = buf + sizeof(ICMP_HDR);
     //
     // Place some junk in the buffer.
@@ -133,23 +133,23 @@ int InitIcmp6Header(char *buf, int datasize)
     return (sizeof(ICMPV6_HDR) + sizeof(ICMPV6_ECHO_REQUEST));
 }
 
-// 
+//
 // Function: checksum
 //
 // Description:
 //    This function calculates the 16-bit one's complement sum
 //    of the supplied buffer (ICMP) header.
 //
-USHORT checksum(USHORT *buffer, int size) 
+USHORT checksum(USHORT *buffer, int size)
 {
     unsigned long cksum=0;
 
-    while (size > 1) 
+    while (size > 1)
     {
         cksum += *buffer++;
         size -= sizeof(USHORT);
     }
-    if (size) 
+    if (size)
     {
         cksum += *(UCHAR*)buffer;
     }
@@ -281,7 +281,7 @@ USHORT ComputeIcmp6PseudoHeaderChecksum(SOCKET s, char *icmppacket, int icmplen,
         return -1;
     }
 
-    // We use a temporary buffer to calculate the pseudo header. 
+    // We use a temporary buffer to calculate the pseudo header.
     ptr = tmp;
     total = 0;
 
@@ -407,7 +407,7 @@ int PostRecvfrom(SOCKET s, char *buf, int buflen, SOCKADDR *from, int *fromlen, 
 
 //
 // Function: PrintPayload
-// 
+//
 // Description:
 //    This routine is for IPv4 only. It determines if there are any IP options
 //    present (by seeing if the IP header length is greater than 20 bytes) and
@@ -501,7 +501,7 @@ int SetTtl(SOCKET s, int ttl)
     }
     return rc;
 }
-        
+
 //
 // Function: main
 //
@@ -509,7 +509,7 @@ int SetTtl(SOCKET s, int ttl)
 //    Setup the ICMP raw socket and create the ICMP header. Add
 //    the appropriate IP option header and start sending ICMP
 //    echo requests to the endpoint. For each send and receive we
-//    set a timeout value so that we don't wait forever for a 
+//    set a timeout value so that we don't wait forever for a
 //    response in case the endpoint is not responding. When we
 //    receive a packet decode it.
 //
@@ -581,7 +581,7 @@ int __cdecl main(int argc, char **argv)
 
     // Create the raw socket
     s = socket(gAddressFamily, SOCK_RAW, gProtocol);
-    if (s == INVALID_SOCKET) 
+    if (s == INVALID_SOCKET)
     {
         printf("socket failed: %d\n", WSAGetLastError());
         return -1;
@@ -617,7 +617,7 @@ int __cdecl main(int argc, char **argv)
             ipopt.opt_ptr  = 4;               // point to the first addr offset
             ipopt.opt_len  = 39;              // length of option header
 
-            rc = setsockopt(s, IPPROTO_IP, IP_OPTIONS, 
+            rc = setsockopt(s, IPPROTO_IP, IP_OPTIONS,
                     (char *)&ipopt, sizeof(ipopt));
             if (rc == SOCKET_ERROR)
             {
@@ -726,11 +726,10 @@ int __cdecl main(int argc, char **argv)
     //
     freeaddrinfo(dest);
     freeaddrinfo(local);
-    if (s != INVALID_SOCKET) 
+    if (s != INVALID_SOCKET)
         closesocket(s);
     HeapFree(GetProcessHeap(), 0, icmpbuf);
 
     WSACleanup();
     return 0;
 }
-
